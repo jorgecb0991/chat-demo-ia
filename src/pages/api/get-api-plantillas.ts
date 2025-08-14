@@ -4,7 +4,7 @@ import path from 'path';
 
 // Configuración de las plantillas
 const PLANTILLAS_DIR = path.join(process.cwd(), 'public', 'plantillas');
-const PLANTILLAS_PERMITIDAS = ['profesional', 'creativa']; // Nombres base sin extensión
+const PLANTILLAS_PERMITIDAS = ['base', 'moderno','profesional']; // Nombres base sin extensión
 
 interface Plantilla {
   nombre: string;
