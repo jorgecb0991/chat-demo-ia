@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { v4 as uuidv4 } from "uuid";
+import { MessageSquarePlus, RefreshCw, Bot, Sparkles, Loader2, Type } from "lucide-react";
 
 export default function CreateChatbotPage() {
   const [intention, setIntention] = useState("");
   const [response, setResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [nameAssistant, setNameAssistant] = useState("");
 
   const router = useRouter();
 
@@ -20,6 +22,19 @@ export default function CreateChatbotPage() {
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   };
+
+  // Cargar nombre del chatbot si ya está en localStorage
+  useEffect(() => {
+    const storedName = localStorage.getItem("nameAssistant");
+    if (storedName) setNameAssistant(storedName);
+  }, []);
+
+  // Guardar nombre del chatbot en localStorage cuando cambia
+  useEffect(() => {
+    if (nameAssistant.trim()) {
+      localStorage.setItem("nameAssistant", nameAssistant);
+    }
+  }, [nameAssistant]);
 
   useEffect(() => {
     if (responseRef.current) handleAutoResize(responseRef.current);
@@ -37,7 +52,7 @@ export default function CreateChatbotPage() {
     setResponse(null);
 
     try {
-      const res = await fetch("/api/generate-instruction", {
+      const res = await fetch("/api/chatbot/instruction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ intention }),
@@ -65,45 +80,54 @@ export default function CreateChatbotPage() {
     setGenerating(true);
 
     try {
-      // Llamada a otro endpoint para generar el chatbot
-      const res = await fetch("/api/send-message-chatbot", {
+      const res = await fetch("/api/chatbot/send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: response , session_id: uuidv4() }),
+        body: JSON.stringify({ message: response, session_id: uuidv4() }),
       });
 
       if (!res.ok) throw new Error("Error al generar chatbot");
-      // Obtener JSON de respuesta
-      const content = await res.json();
-      console.log("content:"+content)
 
-      // Guardar message en localStorage
+      const content = await res.json();
       if (content.data?.message) {
         localStorage.setItem("messageWelcome", content.data.message);
-        localStorage.setItem("session_id",content.data.session_id);
+        localStorage.setItem("session_id", content.data.session_id);
       }
 
-      // Redirigir después de crear el chatbot
       router.push("/qr");
     } catch (error) {
       console.error(error);
       alert("Hubo un problema al generar el chatbot.");
-    } finally {
       setGenerating(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-8">
-      <div className="bg-white shadow-lg rounded-xl p-10 border border-gray-200">
-        <h1 className="text-4xl font-bold text-blue-900 mb-4">Crear Chatbot</h1>
-        <p className="text-gray-900 mb-8">
-          Crea un chatbot personalizado según tus necesidades específicas e interacciones.
+    <div className="p-6 max-w-3xl mx-auto space-y-8 font-sans relative">
+      {/* Overlay de carga bloqueando pantalla */}
+      {generating && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-900" />
+            <p className="text-blue-900 font-semibold">Generando Chatbot...</p>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white shadow-xl rounded-2xl p-10 border border-gray-200">
+        {/* Encabezado */}
+        <div className="flex items-center gap-3 mb-4">
+          <Bot className="w-10 h-10 text-blue-900" />
+          <h1 className="text-4xl font-bold text-blue-900">Crear Chatbot</h1>
+        </div>
+        <p className="text-gray-700 mb-8">
+          Diseña un chatbot personalizado con instrucciones claras y adaptadas a tus necesidades.
         </p>
 
         {!response && (
           <form onSubmit={handleCreate} className="space-y-6">
             <label htmlFor="intention" className="block font-semibold text-gray-800 mb-2">
+              <MessageSquarePlus className="inline w-5 h-5 mr-2 text-blue-900" />
               Ingresa las indicaciones del chatbot
             </label>
             <textarea
@@ -113,30 +137,39 @@ export default function CreateChatbotPage() {
               onChange={(e) => setIntention(e.target.value)}
               required
               rows={1}
-              placeholder="Describe el propósito, audiencia, tono, tareas clave y más..."
+              placeholder="Ejemplo: 'Chatbot para responder dudas sobre admisión de UTEC, tono formal, breve y preciso...'"
               className="w-full p-5 border border-gray-300 rounded-lg resize-none
-                focus:outline-none focus:ring-3 focus:ring-blue-900 transition text-black overflow-hidden"
+                focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-300 
+                hover:border-blue-500 text-black overflow-hidden"
               disabled={loading}
               onInput={(e) => handleAutoResize(e.currentTarget)}
             />
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center gap-4">
               <Button
                 type="submit"
                 className="bg-blue-900 hover:bg-blue-800 text-white py-3 px-7 rounded-lg
-                  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  transition-colors disabled:opacity-50 flex items-center gap-2"
                 disabled={loading}
               >
-                {loading ? "Creando..." : "Crear Chatbot"}
+                {loading ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" /> Creando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" /> Crear Chatbot
+                  </>
+                )}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleClear}
                 disabled={loading && !intention.trim()}
-                className="text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white"
+                className="text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white flex items-center gap-2"
               >
-                Limpiar
+                <RefreshCw className="w-5 h-5" /> Limpiar
               </Button>
             </div>
           </form>
@@ -144,35 +177,59 @@ export default function CreateChatbotPage() {
 
         {response && (
           <div
-            className="mt-10 bg-blue-50 border border-blue-900 rounded-xl p-8 shadow-md animate-fadeIn"
+            className="mt-10 bg-blue-50 border border-blue-900 rounded-xl p-8 shadow-lg animate-fadeIn"
             aria-live="polite"
           >
+            {/* NUEVO INPUT para nombre del chatbot */}
+            <div className="mb-8">
+              <label className="block font-semibold text-gray-800 mb-2">
+                <Type className="inline w-5 h-5 mr-2 text-blue-900" />
+                Nombre del Chatbot
+              </label>
+              <input
+                type="text"
+                value={nameAssistant}
+                onChange={(e) => setNameAssistant(e.target.value)}
+                placeholder="Ejemplo: Asistente de Admisión UTEC"
+                className="w-full p-4 border border-gray-300 rounded-lg 
+                  focus:outline-none focus:ring-2 focus:ring-blue-600 
+                  hover:border-blue-500 text-black transition-all duration-300"
+              />
+            </div>
+
             <div className="space-y-8">
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-semibold text-blue-900 mb-4">Objetivo Chatbot</h2>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-2xl font-semibold text-blue-900 mb-4">🎯 Objetivo Chatbot</h2>
                 <p className="whitespace-pre-line text-gray-800">{intention}</p>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-semibold text-blue-900 mb-4">Instrucciones</h2>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-2xl font-semibold text-blue-900 mb-4">📋 Instrucciones</h2>
                 <textarea
                   ref={responseRef}
                   value={response}
-                  readOnly={false}
+                  onChange={(e) => setResponse(e.target.value)}
                   className="w-full p-5 border border-gray-300 rounded-lg resize-none
-                    focus:outline-none focus:ring-3 focus:ring-blue-900 bg-blue-50 text-black overflow-hidden"
+                    focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-black overflow-hidden transition-all duration-300 hover:border-blue-500"
                   onInput={(e) => handleAutoResize(e.currentTarget)}
                 />
               </div>
             </div>
 
-            {/* 🔹 Botón para generar chatbot y redirigir */}
-            <div className="mt-8 flex gap-4">
+            <div className="mt-8">
               <Button
                 onClick={handleGenerateChatbot}
                 disabled={generating}
-                className="bg-green-700 hover:bg-green-600 text-white w-full rounded-lg transition-colors py-3 px-7 "
+                className="bg-green-700 hover:bg-green-600 text-white w-full rounded-lg transition-colors py-3 px-7 flex items-center justify-center gap-2"
               >
-                {generating ? "Generando..." : "Generar Chatbot"}
+                {generating ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" /> Generando...
+                  </>
+                ) : (
+                  <>
+                    <Bot className="w-5 h-5" /> Generar Chatbot
+                  </>
+                )}
               </Button>
             </div>
           </div>

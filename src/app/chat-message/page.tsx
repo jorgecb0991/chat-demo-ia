@@ -66,6 +66,7 @@ function MessageBubble({ message }: { message: Msg }) {
 
 export default function ChatPage() {
   let messageWelcome = localStorage.getItem("messageWelcome")||"Bienvenido";
+  let assistant = localStorage.getItem("nameAssistant")||"Asistente"
   const [messages, setMessages] = useState<Msg[]>([
     {
       id: uuidv4(),
@@ -109,7 +110,7 @@ export default function ChatPage() {
     abortControllerRef.current = ac;
 
     try {
-      const res = await fetch("/api/send-message-chatbot", {
+      const res = await fetch("/api/chatbot/send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userText, session_id:sessionId }),
@@ -171,7 +172,7 @@ export default function ChatPage() {
               className="w-10 h-10 rounded-md object-cover"
             />
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Asistente</h1>
+              <h1 className="text-lg font-semibold text-gray-900">{assistant}</h1>
               <p className="text-xs text-gray-500">Sesión {sessionId}</p>
             </div>
           </div>
