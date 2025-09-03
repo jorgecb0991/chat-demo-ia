@@ -1,11 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAuthToken } from "@/lib/auth/tokenService";
+import { apiRequest } from '@/lib/api/client';
+import { ENDPOINTS } from '@/lib/api/endpoints';
 
 interface Plantilla {
   nombre: string;
   preview: string;
   archivo: string;
   disponible: boolean;
+}
+
+interface data {
+  templates:[],
+  status:string
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -19,23 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleGetPlantillas(req: NextApiRequest, res: NextApiResponse) {
   try {
-
-    const token = await getAuthToken();
-
-    // Llamar al backend Python
-    const backendResponse = await fetch('http://localhost:8000/api/v1/template/list', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!backendResponse.ok) {
-      const errorText = await backendResponse.text();
-      throw new Error(`Error del backend Python: ${backendResponse.status} ${backendResponse.statusText}. ${errorText}`);
-    }
-
-    const data = await backendResponse.json();
+    // Llamada al backend usando apiRequest que maneja el token
+    const data: data = await apiRequest(ENDPOINTS.ppt.template.list, { method: 'GET' });
 
     if (data.status !== 'OK' || !Array.isArray(data.templates)) {
       throw new Error('Respuesta inválida del backend Python');

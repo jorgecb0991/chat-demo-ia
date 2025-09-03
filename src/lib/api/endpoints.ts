@@ -12,6 +12,9 @@ export const API_BASE = 'http://localhost:8000/api/v1';
 export const ENDPOINTS = {
   ppt: {
     generate: `${API_BASE}/ppt/generate-ppt`,
+    template:{
+      list:`${API_BASE}/template/list`
+    }
   },
   chatbot: {
     sendMessage: `${API_BASE}/chatbot/send-message-chatbot`,
@@ -19,4 +22,9 @@ export const ENDPOINTS = {
   instruction: {
     generate: `${API_BASE}/instruction/generate-instruction`,
   },
+  quiz: {
+    youtube:{
+      generate: `${API_BASE}/quiz/youtube/generate`
+    }
+  }
 };

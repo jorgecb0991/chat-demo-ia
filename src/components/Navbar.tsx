@@ -100,7 +100,16 @@ export default function Navbar() {
                                         className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
                                         onClick={() => setMenuOpen(false)}
                                     >
-                                        Slide Generator
+                                        Generador de presentaciones
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        href="/quiz/youtube"
+                                        className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        Generador de Quiz de youtube
                                     </Link>
                                 </li>
                             </ul>
