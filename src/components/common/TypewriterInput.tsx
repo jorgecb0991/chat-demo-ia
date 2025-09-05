@@ -43,7 +43,7 @@ export default function TypewriterInput({
                 timeoutRef.current = window.setTimeout(tick, speed);
             } else {
                 setIsTyping(false);
-                doneRef.current = true; // ✅ ya no se repite nunca más
+                doneRef.current = true; //ya no se repite nunca más
                 onComplete?.();
             }
         };

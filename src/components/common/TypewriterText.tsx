@@ -47,7 +47,7 @@ export default function TypewriterText({
         window.clearTimeout(timeoutRef.current);
       }
     };
-  }, [text, speed]); // sin onComplete en deps
+  }, [text, speed]); //sin onComplete en deps
 
   return <span>{displayed}</span>;
 }

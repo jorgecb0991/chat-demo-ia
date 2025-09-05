@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import TypewriterText from "@/components/ui/TypewriterText";
-import TypewriterInput from "@/components/ui/TypewriterInput";
+import TypewriterText from "@/components/common/TypewriterText";
+import TypewriterInput from "@/components/common/TypewriterInput";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { QuizQuestion } from "@/store/slices/quizSlice"; 
 

@@ -6,12 +6,15 @@ import { QuizQuestion, setQuiz } from "@/store/slices/quizSlice";
 import { Save, ClipboardList, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import DefaultLayout from "@/components/layout/DefaultLayout";
-import QuestionCard from "@/components/ui/QuestionCard";
-import VideoHeaderCard from "@/components/VideoHeaderCard";
+import EditableQuestionCard from "@/components/quiz/EditableQuestionCard";
+import VideoHeaderCard from "@/components/video/VideoHeaderCard";
 import HoverButton from "@/components/ui/HoverButton";
+import { mockQuiz } from "@/mocks/quizMocks";
+import { Button } from "@/components/ui/button"; // ✅ import de shadcn/ui
 
 export default function QuizConfigPage() {
-    const quiz = useAppSelector((state) => state.quiz.current);
+    //const quiz = useAppSelector((state) => state.quiz.current);
+    const quiz = mockQuiz;
     const [currentIndex, setCurrentIndex] = useState(0);
     const [questions, setQuestions] = useState(quiz?.questions || []);
     const dispatch = useAppDispatch();
@@ -29,11 +32,13 @@ export default function QuizConfigPage() {
             order: questions.length,
             type: "multiple",
             questionText: "",
-            options: Array(4).fill(null).map(() => ({
-                optionId: crypto.randomUUID(),
-                text: "",
-                isCorrect: false,
-            })),
+            options: Array(4)
+                .fill(null)
+                .map(() => ({
+                    optionId: crypto.randomUUID(),
+                    text: "",
+                    isCorrect: false,
+                })),
             suggestedAnswer: "",
             explanation: "",
         };
@@ -47,7 +52,9 @@ export default function QuizConfigPage() {
 
     const handleUpdateQuestion = (updatedQuestion: QuizQuestion) => {
         setQuestions((prev) =>
-            prev.map((q) => (q.questionId === updatedQuestion.questionId ? updatedQuestion : q))
+            prev.map((q) =>
+                q.questionId === updatedQuestion.questionId ? updatedQuestion : q
+            )
         );
     };
 
@@ -70,7 +77,7 @@ export default function QuizConfigPage() {
         <DefaultLayout
             title="Preguntas del Quiz"
             titleIcon={<ClipboardList className="w-6 h-6" />}
-            >
+        >
             {/* Header con video */}
             <VideoHeaderCard
                 thumbnail={quiz.videoThumbnail || ""}
@@ -87,26 +94,24 @@ export default function QuizConfigPage() {
             {/* Preguntas */}
             <div className="space-y-6">
                 <div className="flex items-center justify-center mb-2 mt-4">
-                    {/*<h2 className="text-2xl font-bold text-blue-900 flex items-center gap-2">
-                        <ClipboardList className="w-6 h-6 text-primary" />
-                        Preguntas del Quiz
-                    </h2>*/}
-
-                    <button
+                    <Button
                         onClick={handleSaveQuiz}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-xl shadow hover:bg-blue-700 transition "
+                        variant="default"
+                        className="gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow"
                     >
                         <Save size={18} />
                         Guardar
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="flex flex-col items-center text-black w-full">
                     {questions.slice(0, currentIndex + 1).map((q, index) => (
                         <div key={q.questionId} className="w-full">
-                            <QuestionCard
+                            <EditableQuestionCard
                                 question={q}
-                                onComplete={index === currentIndex ? handleCardComplete : () => { }}
+                                onComplete={
+                                    index === currentIndex ? handleCardComplete : () => { }
+                                }
                                 index={index}
                                 onDelete={handleCardDelete}
                                 onChange={handleUpdateQuestion}

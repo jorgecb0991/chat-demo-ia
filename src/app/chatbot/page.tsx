@@ -2,10 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import {
+    Card
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
 import { v4 as uuidv4 } from "uuid";
-import { MessageSquarePlus, RefreshCw, Bot, Sparkles, Loader2, Type, Code } from "lucide-react";
+import { MessageSquarePlus, RefreshCw, Bot, Sparkles, Loader2, Type, Code, Target, ListChecks } from "lucide-react";
 import DefaultLayout from "@/components/layout/DefaultLayout";
+import SubmitButton from "@/components/common/SubmitButton"
 
 export default function CreateChatbotPage() {
     const [intention, setIntention] = useState("");
@@ -165,60 +173,71 @@ export default function CreateChatbotPage() {
 
             {response && (
                 <div
-                    className="mt-10 bg-blue-50 border border-blue-900 rounded-xl p-8 shadow-lg animate-fadeIn"
+                    className="animate-fadeIn"
                     aria-live="polite"
                 >
                     {/* NUEVO INPUT para nombre del chatbot */}
-                    <div className="mb-8">
-                        <label className="block font-semibold text-gray-800 mb-2">
-                            <Type className="inline w-5 h-5 mr-2 text-blue-900" />
-                            Nombre del Chatbot
-                        </label>
-                        <input
-                            type="text"
-                            value={nameAssistant}
-                            onChange={(e) => setNameAssistant(e.target.value)}
-                            placeholder="Ejemplo: Asistente de Admisión UTEC"
-                            className="w-full p-4 border border-gray-300 rounded-lg 
-                                        focus:outline-none focus:ring-2 focus:ring-blue-600 
-                                        hover:border-blue-500 text-black transition-all duration-300"
-                        />
-                    </div>
-
-                    <div className="space-y-8">
-                        <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h2 className="text-2xl font-semibold text-blue-900 mb-4">🎯 Objetivo Chatbot</h2>
-                            <p className="whitespace-pre-line text-gray-800">{intention}</p>
+                    <Card className="mb-2 p-6 shadow-md gap-2">
+                        <div className="space-y-3">
+                            <Label
+                                htmlFor="chatbot-name"
+                                className="flex items-center gap-2 font-semibold text-blue-900"
+                            >
+                                <Type className="w-5 h-5" />
+                                Nombre del Chatbot
+                            </Label>
+                            <Input
+                                id="chatbot-name"
+                                type="text"
+                                value={nameAssistant}
+                                onChange={(e) => setNameAssistant(e.target.value)}
+                                placeholder="Ejemplo: Asistente de Admisión UTEC"
+                                className="text-black"
+                            />
                         </div>
-                        <div className="bg-white p-6 rounded-lg shadow-md">
-                            <h2 className="text-2xl font-semibold text-blue-900 mb-4">📋 Instrucciones</h2>
-                            <textarea
+                    </Card>
+
+                    <div className="space-y-2">
+                        {/* Objetivo */}
+                        <Card className="p-6 shadow-sm gap-2">
+                            <h2 className="flex items-center gap-2 text-xl font-semibold text-blue-900 mb-3">
+                                <Target className="w-5 h-5" />
+                                Objetivo del Chatbot
+                            </h2>
+                            <p className="whitespace-pre-line text-gray-800">{intention}</p>
+                        </Card>
+
+                        {/* Instrucciones */}
+                        <Card className="p-6 shadow-sm gap-2">
+                            <h2 className="flex items-center gap-2 text-xl font-semibold text-blue-900 mb-3">
+                                <ListChecks className="w-5 h-5" />
+                                Instrucciones
+                            </h2>
+                            <Textarea
                                 ref={responseRef}
                                 value={response}
                                 onChange={(e) => setResponse(e.target.value)}
-                                className="w-full p-5 border border-gray-300 rounded-lg resize-none
-                                            focus:outline-none focus:ring-2 focus:ring-blue-600 bg-blue-50 text-black overflow-hidden transition-all duration-300 hover:border-blue-500"
+                                className="min-h-[150px] resize-none text-black"
                                 onInput={(e) => handleAutoResize(e.currentTarget)}
                             />
-                        </div>
+                        </Card>
                     </div>
 
-                    <div className="mt-8">
-                        <Button
+                    {/* Botón personalizado */}
+                    <div className="mt-2">
+                        <SubmitButton
                             onClick={handleGenerateChatbot}
-                            disabled={generating}
-                            className="bg-green-700 hover:bg-green-600 text-white w-full rounded-lg transition-colors py-3 px-7 flex items-center justify-center gap-2"
-                        >
-                            {generating ? (
-                                <>
-                                    <RefreshCw className="w-5 h-5 animate-spin" /> Generando...
-                                </>
-                            ) : (
-                                <>
-                                    <Bot className="w-5 h-5" /> Generar Chatbot
-                                </>
-                            )}
-                        </Button>
+                            text="Generar Chatbot"
+                            loadingText={
+                                <span className="flex items-center gap-2">
+                                    <RefreshCw className="w-5 h-5 animate-spin" />
+                                    Generando...
+                                </span>
+                            }
+                            size="lg"
+                            baseColor="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white hover:opacity-90"
+                            fullWidth
+                        />
                     </div>
                 </div>
             )}

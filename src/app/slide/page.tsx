@@ -1,11 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
 import Image from "next/image";
-import SourceMaterialInput from "@/components/SourceMaterialInput";
+import { Presentation } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent,
+    CardDescription,
+} from "@/components/ui/card";
+
+import SourceMaterialInput from "@/components/ui/source-material-input";
 import DefaultLayout from "@/components/layout/DefaultLayout";
-import { Presentation } from "lucide-react";  
 
 interface Slide {
     titulo: string;
@@ -50,6 +70,7 @@ export default function SlideGeneratorPage() {
                 }
             } catch (error) {
                 console.error("Error cargando plantillas:", error);
+                toast.error("No se pudieron cargar las plantillas.");
             } finally {
                 setLoadingPlantillas(false);
             }
@@ -59,7 +80,8 @@ export default function SlideGeneratorPage() {
 
     const generarSlides = async () => {
         if (sourceType !== "file" && (!sourceValue.trim() || !titulo.trim())) {
-            return alert("Completa todos los campos");
+            toast.warning("Completa todos los campos antes de continuar.");
+            return;
         }
 
         setLoading(true);
@@ -85,7 +107,8 @@ export default function SlideGeneratorPage() {
             if (sourceType === "file") {
                 if (!fileBytes || !mimeType) {
                     setLoading(false);
-                    return alert("Debes subir un archivo");
+                    toast.error("Debes subir un archivo para continuar.");
+                    return;
                 }
                 formData.append(
                     "file",
@@ -114,10 +137,12 @@ export default function SlideGeneratorPage() {
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+
+            toast.success("La presentación se generó correctamente.");
         } catch (error) {
             console.error("Error al generar slides:", error);
-            alert(
-                "Ocurrió un error al generar la presentación: " +
+            toast.error(
+                "Ocurrió un error al generar la presentación. " +
                 (error as Error).message
             );
         } finally {
@@ -165,103 +190,112 @@ export default function SlideGeneratorPage() {
                 ) : undefined
             }
         >
-            <div className="space-y-4">
-                <SourceMaterialInput
-                    sourceType={sourceType}
-                    onTypeChange={setSourceType}
-                    sourceValue={sourceValue}
-                    onValueChange={(value) => setSourceValue(value)}
-                    onFileChange={(bytes, type) => {
-                        setFileBytes(bytes);
-                        setMimeType(type);
-                    }}
-                />
-
-                <div>
-                    <label className="font-medium">Título de la presentación</label>
-                    <input
-                        type="text"
-                        className="w-full p-2 border rounded mt-1"
-                        value={titulo}
-                        onChange={(e) => setTitulo(e.target.value)}
-                        placeholder="Ej. Conceptos clave sobre energía en física"
+            
+                <div className="space-y-6">
+                    <SourceMaterialInput
+                        sourceType={sourceType}
+                        onTypeChange={setSourceType}
+                        sourceValue={sourceValue}
+                        onValueChange={(value) => setSourceValue(value)}
+                        onFileChange={(bytes, type) => {
+                            setFileBytes(bytes);
+                            setMimeType(type);
+                        }}
                     />
-                </div>
 
-                <div>
-                    <label className="font-medium">Número de slides sugerido</label>
-                    <input
-                        type="number"
-                        className="w-full p-2 border rounded mt-1"
-                        value={numSlides}
-                        onChange={(e) => setNumSlides(Number(e.target.value))}
-                        min={1}
-                        max={20}
-                    />
-                </div>
+                    <div className="flex flex-col space-y-2">
+                        <Label htmlFor="titulo">Título de la presentación</Label>
+                        <Input
+                            id="titulo"
+                            type="text"
+                            value={titulo}
+                            onChange={(e) => setTitulo(e.target.value)}
+                            placeholder="Ej. Conceptos clave sobre energía en física"
+                        />
+                    </div>
 
-                <div>
-                    <label className="font-medium">
-                        Instrucciones adicionales del profesor (opcional)
-                    </label>
-                    <textarea
-                        className="w-full p-2 border rounded mt-1"
-                        rows={4}
-                        value={instruccionesProfesor}
-                        onChange={(e) => setInstruccionesProfesor(e.target.value)}
-                        placeholder="Ej. Enfocar la presentación en aplicaciones en ingeniería civil"
-                    />
-                </div>
+                    <div className="flex flex-col space-y-2">
+                        <Label htmlFor="numSlides">Número de slides sugerido</Label>
+                        <Input
+                            id="numSlides"
+                            type="number"
+                            value={numSlides}
+                            onChange={(e) => setNumSlides(Number(e.target.value))}
+                            min={1}
+                            max={20}
+                        />
+                    </div>
 
-                <div>
-                    <label className="font-medium">Seleccionar Plantilla</label>
-                    {loadingPlantillas ? (
-                        <p>Cargando plantillas...</p>
-                    ) : (
-                        <div className="mt-2">
-                            <select
-                                className="w-full p-2 border rounded"
-                                value={plantillaSeleccionada}
-                                onChange={(e) => setPlantillaSeleccionada(e.target.value)}
-                            >
-                                {plantillas.length > 0 ? (
-                                    plantillas.map((plantilla) => (
-                                        <option key={plantilla.nombre} value={plantilla.nombre}>
-                                            {plantilla.nombre}
-                                        </option>
-                                    ))
-                                ) : (
-                                    <option disabled>No hay plantillas disponibles</option>
+                    <div className="flex flex-col space-y-2">
+                        <Label htmlFor="instruccionesProfesor">
+                            Instrucciones adicionales del profesor (opcional)
+                        </Label>
+                        <Textarea
+                            id="instruccionesProfesor"
+                            rows={4}
+                            value={instruccionesProfesor}
+                            onChange={(e) => setInstruccionesProfesor(e.target.value)}
+                            placeholder="Ej. Enfocar la presentación en aplicaciones en ingeniería civil"
+                        />
+                    </div>
+
+                    <div className="flex flex-col space-y-2">
+                        <Label>Seleccionar Plantilla</Label>
+                        {loadingPlantillas ? (
+                            <p className="text-sm text-muted-foreground">Cargando plantillas...</p>
+                        ) : (
+                            <div className="mt-2">
+                                <Select
+                                    value={plantillaSeleccionada}
+                                    onValueChange={setPlantillaSeleccionada}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona una plantilla" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {plantillas.length > 0 ? (
+                                            plantillas.map((plantilla) => (
+                                                <SelectItem key={plantilla.nombre} value={plantilla.nombre}>
+                                                    {plantilla.nombre}
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <SelectItem value="none" disabled>
+                                                No hay plantillas disponibles
+                                            </SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+
+                                {plantillaSeleccionada && (
+                                    <Card className="mt-4 gap-2">
+                                        <CardHeader>
+                                            <CardTitle>Vista previa</CardTitle>
+                                            <CardDescription>
+                                                Plantilla seleccionada: {plantillaSeleccionada}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="relative w-full aspect-video     rounded">
+                                                <Image
+                                                    src={plantillas.find((p) => p.nombre === plantillaSeleccionada)?.preview || ""}
+                                                    alt={`Preview ${plantillaSeleccionada}`}
+                                                    fill
+                                                    className="object-contain"
+                                                />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 )}
-                            </select>
+                            </div>
+                        )}
+                    </div>
 
-                            {plantillaSeleccionada && (
-                                <div className="mt-4 border p-4 rounded-lg">
-                                    <h3 className="font-medium mb-2">Vista previa:</h3>
-                                    <div className="relative w-full h-80 rounded">
-                                        <Image
-                                            src={
-                                                plantillas.find(
-                                                    (p) => p.nombre === plantillaSeleccionada
-                                                )?.preview || ""
-                                            }
-                                            alt={`Preview ${plantillaSeleccionada}`}
-                                            fill
-                                        />
-                                    </div>
-                                    <p className="mt-2 text-sm text-gray-600">
-                                        Plantilla seleccionada: {plantillaSeleccionada}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <Button onClick={generarSlides} disabled={loading || loadingPlantillas}>
+                        {loading ? "Generando..." : "Generar presentación"}
+                    </Button>
                 </div>
-
-                <Button onClick={generarSlides} disabled={loading || loadingPlantillas}>
-                    {loading ? "Generando..." : "Generar presentación"}
-                </Button>
-            </div>
+            
         </DefaultLayout>
     );
 }

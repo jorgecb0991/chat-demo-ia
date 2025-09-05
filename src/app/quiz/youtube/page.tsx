@@ -1,13 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { Search, Youtube } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setQuiz } from "@/store/slices/quizSlice";
-import DefaultLayout from "@/components/layout/DefaultLayout"; // importa tu layout
+import DefaultLayout from "@/components/layout/DefaultLayout";
+import SubmitButton from "@/components/common/SubmitButton";
 
 export default function YoutubeQuizPage() {
     const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -22,7 +33,6 @@ export default function YoutubeQuizPage() {
 
     const handleSearchVideo = () => {
         if (!youtubeUrl) return;
-
         try {
             const urlObj = new URL(youtubeUrl);
             let videoId = "";
@@ -31,7 +41,6 @@ export default function YoutubeQuizPage() {
             } else {
                 videoId = urlObj.searchParams.get("v") || "";
             }
-
             if (videoId) {
                 setVideoThumbnail(`https://img.youtube.com/vi/${videoId}/0.jpg`);
             }
@@ -65,7 +74,6 @@ export default function YoutubeQuizPage() {
 
             const data = await response.json();
             const quiz = data?.data?.quiz;
-            console.log("Quiz generado:", data);
             dispatch(setQuiz(quiz));
             router.push("/quiz/youtube/config");
         } catch (error) {
@@ -80,8 +88,8 @@ export default function YoutubeQuizPage() {
             titleIcon={<Youtube className="w-6 h-6" />}
             description="Genera un quiz a partir de un video de YouTube con diferentes tipos de preguntas."
         >
-            {/* Sección del logo y búsqueda */}
-            <div className="bg-blue-50 rounded-lg p-2 flex flex-col items-center ">
+            {/* Sección logo y búsqueda */}
+            <div className="bg-blue-50 rounded-lg p-2 flex flex-col items-center">
                 <div className="relative w-20 h-20">
                     <Image
                         src="/img/youtube_logo.png"
@@ -92,31 +100,35 @@ export default function YoutubeQuizPage() {
                 </div>
 
                 {!videoThumbnail && (
-                    <div className="w-full flex items-center relative">
-                        <input
-                            type="text"
-                            placeholder="Buscar en YouTube"
-                            value={youtubeUrl}
-                            onChange={(e) => setYoutubeUrl(e.target.value)}
-                            className="flex-1 pl-4 pr-12 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 transition-all duration-300 shadow-sm hover:shadow-md"
-                        />
-                        {/* Botón de búsqueda dentro del input */}
-                        <button
+                    <div className="flex w-full max-w-xl items-center">
+                        <div className="relative flex-1">
+                            <Input
+                                type="text"
+                                placeholder="Buscar en YouTube"
+                                value={youtubeUrl}
+                                onChange={(e) => setYoutubeUrl(e.target.value)}
+                                className="pr-8" // deja espacio para el botón X dentro del input
+                            />
+
+                            {/* Botón limpiar dentro del input */}
+                            {youtubeUrl && (
+                                <button
+                                    onClick={() => setYoutubeUrl("")}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
+                                >
+                                    &#10005;
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Botón buscar al costado */}
+                        <Button
                             onClick={handleSearchVideo}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black hover:bg-red-500 text-white p-2 rounded-full flex items-center justify-center transition-colors"
+                            size="icon"
+                            className="ml-2 bg-black hover:bg-red-500 text-white shadow-md"
                         >
-                            <Search size={20} />
-                        </button>
-                        {/* Botón de limpiar input */}
-                        {youtubeUrl && (
-                            <button
-                                onClick={() => setYoutubeUrl("")}
-                                className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition-colors"
-                                aria-label="Borrar búsqueda"
-                            >
-                                &#10005;
-                            </button>
-                        )}
+                            <Search className="h-4 w-4" />
+                        </Button>
                     </div>
                 )}
 
@@ -137,18 +149,9 @@ export default function YoutubeQuizPage() {
                                 aria-label="Reproducir video"
                                 style={{ top: "50%", transform: "translateY(-50%)" }}
                             >
-                                <svg viewBox="0 0 68 48" width="24" height="24">
-                                    <path
-                                        d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 
-                        C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 
-                        C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"
-                                        fill="#f03"
-                                    />
-                                    <path d="M 45,24 27,14 27,34" fill="#fff" />
-                                </svg>
+                                ▶
                             </button>
                         </a>
-
                         <button
                             onClick={() => setVideoThumbnail(null)}
                             className="absolute top-2 right-2 text-gray-800 p-1 rounded-full shadow hover:font-bold transition-colors"
@@ -160,80 +163,94 @@ export default function YoutubeQuizPage() {
                 )}
             </div>
 
-            {/* Tipo de preguntas y número de preguntas */}
+            {/* Tipo y número de preguntas */}
             <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 mt-6">
                 <div className="flex-1">
-                    <label className="font-medium text-gray-900">Tipo de preguntas</label>
-                    <select
+                    <Label>Tipo de preguntas</Label>
+                    <Select
                         value={questionType}
-                        onChange={(e) => setQuestionType(e.target.value)}
-                        className="w-full p-2 border rounded mt-1 bg-white text-gray-900"
+                        onValueChange={(val) => setQuestionType(val)}
                     >
-                        <option value="multiple">Selección múltiple</option>
-                        <option value="short">Respuestas cortas</option>
-                        <option value="mixed">Mixto</option>
-                    </select>
+                        <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Selecciona un tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="multiple">Selección múltiple</SelectItem>
+                            <SelectItem value="short">Respuestas cortas</SelectItem>
+                            <SelectItem value="mixed">Mixto</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div className="flex-1">
-                    <label className="font-medium text-gray-900">Número de preguntas</label>
-                    <select
-                        value={numQuestions}
-                        onChange={(e) => setNumQuestions(Number(e.target.value))}
-                        className="w-full p-2 border rounded mt-1 bg-white text-gray-900"
+                    <Label>Número de preguntas</Label>
+                    <Select
+                        value={String(numQuestions)}
+                        onValueChange={(val) => setNumQuestions(Number(val))}
                     >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={15}>15</option>
-                        <option value={20}>20</option>
-                    </select>
+                        <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Selecciona cantidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="5">5</SelectItem>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="15">15</SelectItem>
+                            <SelectItem value="20">20</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
-            {/* Instrucciones adicionales */}
+            {/* Instrucciones */}
             <div className="mt-6">
-                <label className="font-medium text-gray-900">Instrucciones adicionales (opcional)</label>
-                <textarea
+                <Label>Instrucciones adicionales (opcional)</Label>
+                <Textarea
                     value={instructions}
                     onChange={(e) => setInstructions(e.target.value)}
                     placeholder="Escribe instrucciones para el quiz"
-                    className="w-full p-2 border rounded mt-1 h-24 resize-none bg-white text-gray-900"
+                    className="mt-1 h-24 resize-none"
                 />
             </div>
 
             {/* Nivel académico y idioma */}
             <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 mt-6">
                 <div className="flex-1">
-                    <label className="font-medium text-gray-900">Nivel académico (opcional)</label>
-                    <input
+                    <Label>Nivel académico (opcional)</Label>
+                    <Input
                         type="text"
                         value={academicLevel}
                         onChange={(e) => setAcademicLevel(e.target.value)}
                         placeholder="Ej. Secundaria, Universitario"
-                        className="w-full p-2 border rounded mt-1 bg-white text-gray-900"
+                        className="mt-1"
                     />
                 </div>
 
                 <div className="flex-1">
-                    <label className="font-medium text-gray-900">Idioma</label>
-                    <select
+                    <Label>Idioma</Label>
+                    <Select
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full p-2 border rounded mt-1 bg-white text-gray-900"
+                        onValueChange={(val) => setLanguage(val)}
                     >
-                        <option value="es">Español</option>
-                        <option value="en">Inglés</option>
-                        <option value="pt">Portugués</option>
-                    </select>
+                        <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Selecciona idioma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="es">Español</SelectItem>
+                            <SelectItem value="en">Inglés</SelectItem>
+                            <SelectItem value="pt">Portugués</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
-            <Button
-                className="w-full rounded-lg py-2 mt-6 bg-red-600 hover:bg-red-500 text-white"
+            <SubmitButton
+                text="Generar YouTube Quiz"
+                loadingText="Generando..."
+                size="lg"
                 onClick={handleGenerateQuiz}
-            >
-                Generar YouTube Quiz
-            </Button>
+                className="mt-6 py-4" // ✅ margen arriba + padding vertical extra
+                baseColor="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
+            />
         </DefaultLayout>
     );
 }

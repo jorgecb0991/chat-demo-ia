@@ -1,6 +1,13 @@
 "use client";
 
 import { ReactNode } from "react";
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+} from "@/components/ui/card";
 
 interface DefaultLayoutProps {
     title?: string;
@@ -9,7 +16,7 @@ interface DefaultLayoutProps {
     children: ReactNode;
     loading?: boolean;
     loadingMessage?: string;
-    loadingIcon?: ReactNode; // opcional: para custom loader (YouTube, spinner, etc.)
+    loadingIcon?: ReactNode;
 }
 
 export default function DefaultLayout({
@@ -22,7 +29,7 @@ export default function DefaultLayout({
     loadingIcon,
 }: DefaultLayoutProps) {
     return (
-        <div className="relative p-6 max-w-3xl mx-auto space-y-6 font-sans">
+        <div className="relative flex justify-center items-start p-6 h-full">
             {/* Overlay de carga */}
             {loading && (
                 <div className="fixed inset-0 bg-black/60 flex flex-col items-center justify-center z-50 backdrop-blur-sm">
@@ -37,25 +44,28 @@ export default function DefaultLayout({
                 </div>
             )}
 
-            <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-200 text-black">
-                {/* Header */}
-                {(title || description) && (
-                    <div className="mb-6">
-                        {title && (
-                            <h1 className="text-3xl font-bold text-blue-900 flex items-center gap-2">
-                                {titleIcon && <span className="text-blue-900">{titleIcon}</span>}
-                                {title}
-                            </h1>
-                        )}
-                        {description && (
-                            <p className="text-gray-700 mt-2">{description}</p>
-                        )}
-                    </div>
-                )}
+            <Card className="w-full max-w-7xl mx-auto shadow-xl border border-gray-200 flex flex-col flex-1 min-h-0 gap-2">
+                <CardHeader>
+                    {title && (
+                        <CardTitle className="text-2xl md:text-3xl font-bold text-blue-900 flex items-center gap-2">
+                            {titleIcon && <span className="text-blue-900">{titleIcon}</span>}
+                            {title}
+                        </CardTitle>
+                    )}
+                    {description && (
+                        <CardDescription className="text-gray-700 mt-2 text-sm md:text-base">
+                            {description}
+                        </CardDescription>
+                    )}
+                </CardHeader>
 
-                {/* Contenido dinámico */}
-                {children}
-            </div>
+                <CardContent className="flex-1 min-h-0">
+                    {/* ✅ Aquí el único scroll */}
+                    <div className="p-4 md:p-6">
+                        {children}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }
