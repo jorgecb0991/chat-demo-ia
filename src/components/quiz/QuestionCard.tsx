@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { QuizQuestion } from "@/store/slices/quizSlice";
+import { motion } from "framer-motion";
 
 interface QuestionCardProps {
     question: QuizQuestion;
     index: number;
     onAnswer?: (questionId: string, optionId: string) => void;
-    selectedAnswer?: string | null; // respuesta marcada
-    showResults?: boolean; // activa modo revisión
+    selectedAnswer?: string | null;
+    showResults?: boolean;
 }
 
 export default function QuestionCard({
@@ -18,21 +19,7 @@ export default function QuestionCard({
     selectedAnswer,
     showResults = false,
 }: QuestionCardProps) {
-    const [revealedOptions, setRevealedOptions] = useState(0);
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    useEffect(() => {
-        if (!showResults && revealedOptions < (question.options?.length ?? 0)) {
-            const timer = setTimeout(() => {
-                setRevealedOptions((prev) => prev + 1);
-            }, 500);
-            return () => clearTimeout(timer);
-        } else if (showResults) {
-            // mostrar todas si es modo revisión
-            setRevealedOptions(question.options?.length ?? 0);
-        }
-    }, [revealedOptions, question.options?.length, showResults]);
 
     const handleSelect = (optionId: string) => {
         if (!showResults) {
@@ -41,7 +28,16 @@ export default function QuestionCard({
     };
 
     return (
-        <div className="w-full max-w-xl mx-auto my-4 rounded-2xl border shadow-lg bg-white">
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+                type: "spring",
+                stiffness: 120,
+                damping: 12
+            }}
+            className="w-full max-w-xl mx-auto my-4 rounded-2xl border shadow-lg bg-white"
+        >
             {/* Header */}
             <div className="px-4 py-3 border-b border-gray-100 flex items-center">
                 <div className="w-8 h-8 rounded-full border flex items-center justify-center font-semibold text-gray-700 bg-gray-50">
@@ -55,7 +51,7 @@ export default function QuestionCard({
 
             {/* Options */}
             <div className="p-4 flex flex-col gap-2">
-                {question.options?.slice(0, revealedOptions).map((opt, idx) => {
+                {question.options?.map((opt, idx) => {
                     const isCorrect = !!opt.isCorrect;
                     const isSelected = selectedAnswer === opt.optionId;
 
@@ -81,11 +77,11 @@ export default function QuestionCard({
                             key={opt.optionId}
                             className={optionStyle}
                             onClick={() => handleSelect(opt.optionId)}
-                            disabled={showResults} // no se puede cambiar en revisión
+                            disabled={showResults}
                         >
                             <div
                                 className={`w-6 h-6 rounded-full flex items-center justify-center font-semibold
-                                        ${showResults
+                                    ${showResults
                                         ? isCorrect
                                             ? "bg-green-500 text-white"
                                             : isSelected
@@ -106,16 +102,20 @@ export default function QuestionCard({
 
             {/* Explicación */}
             {showResults && (
-                <div className="border-t border-gray-200 px-4 py-3">
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="border-t border-gray-200 px-4 py-3"
+                >
                     <div className="rounded-lg border border-gray-200 bg-green-50 shadow-sm p-4">
                         <p className="font-semibold text-gray-800">💡 Explicación</p>
                         <p className="text-sm text-gray-700 whitespace-pre-wrap">
                             {question.explanation}
                         </p>
                     </div>
-                </div>
+                </motion.div>
             )}
-
-        </div>
+        </motion.div>
     );
 }

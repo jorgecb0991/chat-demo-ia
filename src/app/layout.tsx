@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
@@ -5,7 +6,6 @@ import StoreProvider from "./StoreProvider"
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb"
-import { Toaster } from "sonner"
 import { Card } from "@/components/ui/card"
 
 const geistSans = Geist({
@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-utec-gray-100 dark:bg-utec-gray-900 text-utec-gray-800 dark:text-white`}
+        className={` ${geistSans.variable} ${geistMono.variable} bg-app-pattern antialiased bg-utec-gray-100 dark:bg-utec-gray-900 text-utec-gray-800 dark:text-white`}
       >
         <StoreProvider>
           <SidebarProvider>

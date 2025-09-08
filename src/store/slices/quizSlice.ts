@@ -17,15 +17,20 @@ export interface QuizQuestion {
 }
 
 export interface QuizMetadata {
-    createdAt?: string;
-    updatedAt?: string;
-    author?: string;
+    videoId: string;
+    videoThumbnail?: string;
+    channelTitle?: string;
     tags?: string[];
     views?: string;
     publishedAt?: string;
     publishedAgo?: string;
     channelName?: string;
     channelAvatar?: string;
+    likes?: string;
+    comments?: string;
+    duration?: string;
+    videoTitle?: string;
+    description?: string;
 }
 
 export interface Quiz {
@@ -33,7 +38,6 @@ export interface Quiz {
     title?: string;
     description?: string;
     videoUrl: string;
-    videoThumbnail?: string;
     language: string;
     academicLevel?: string;
     instructions?: string;

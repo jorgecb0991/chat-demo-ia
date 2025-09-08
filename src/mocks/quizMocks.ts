@@ -5,12 +5,13 @@ export const mockQuiz: Quiz = {
     title: "Quiz de ejemplo",
     description: "Un cuestionario de práctica sobre geografía.",
     videoUrl: "https://youtube.com/watch?v=abcd1234",
-    videoThumbnail: "https://img.youtube.com/vi/abcd1234/0.jpg",
     language: "es",
     metadata: {
+        videoId:"xxxx",
         views: "1,234",
         channelName: "Canal Demo",
         channelAvatar: "https://placekitten.com/80/80",
+        videoThumbnail: "https://img.youtube.com/vi/abcd1234/0.jpg",
     },
     questions: [
         {

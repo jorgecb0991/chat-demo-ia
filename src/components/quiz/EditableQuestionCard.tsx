@@ -1,10 +1,9 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import TypewriterText from "@/components/common/TypewriterText";
 import TypewriterInput from "@/components/common/TypewriterInput";
 import { MoreVertical, Trash2 } from "lucide-react";
-import { QuizQuestion } from "@/store/slices/quizSlice"; 
+import { QuizQuestion } from "@/store/slices/quizSlice";
 
 interface QuestionCardProps {
     question: QuizQuestion;
@@ -15,7 +14,7 @@ interface QuestionCardProps {
     onChange?: (updated: QuizQuestion) => void;
 }
 
-export default function QuestionCard({
+export default function EditableQuestionCard({
     question,
     index,
     onComplete,
@@ -23,45 +22,64 @@ export default function QuestionCard({
     editable = false,
     onChange,
 }: QuestionCardProps) {
-    const [showOptions, setShowOptions] = useState(false);
-    const [revealedOptions, setRevealedOptions] = useState(0);
     const [localQuestion, setLocalQuestion] = useState(question);
-    const [selected, setSelected] = useState(false); // para el efecto de selección del card
-    const [menuOpen, setMenuOpen] = useState(false); // para el menú de tres puntos
+    const [selected, setSelected] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    // Opciones que ya se mostraron
+    const [shownOptions, setShownOptions] = useState<number[]>([]);
+
+    // refs para evitar disparos múltiples
+    const questionDoneRef = useRef(false);
+    const optionDoneRef = useRef<Record<number, boolean>>({});
+
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    const handleQuestionComplete = () => {
-        setShowOptions(true);
-    };
-
-    useEffect(() => {
-        if (showOptions && revealedOptions < (localQuestion.options?.length ?? 0)) {
-            const timer = setTimeout(() => {
-                setRevealedOptions((prev) => prev + 1);
-            }, 600);
-            return () => clearTimeout(timer);
-        }
-        if (revealedOptions === (localQuestion.options?.length ?? 0)) {
-            onComplete();
-        }
-    }, [showOptions, revealedOptions, localQuestion.options?.length ?? 0, onComplete]);
 
     useEffect(() => {
         setLocalQuestion(question);
-    }, [question]);
+        setShownOptions([]);
+        questionDoneRef.current = false;
+        optionDoneRef.current = {};
+    }, [question.questionId]);
 
-    const handleCircleClick = (index: number) => {
+    const handleQuestionComplete = () => {
+        if (questionDoneRef.current) return;
+        questionDoneRef.current = true;
+        console.log(`[Card ${index}] ✅ Pregunta terminada → mostrando primera opción`);
+        if (localQuestion.options?.length) {
+            setShownOptions([0]);
+        } else {
+            onComplete();
+        }
+    };
+
+    const handleOptionComplete = (idx: number) => {
+        if (optionDoneRef.current[idx]) return;
+        optionDoneRef.current[idx] = true;
+
+        console.log(`[Card ${index}] ✅ Opción ${idx} terminada`);
+
+        if (idx < (localQuestion.options?.length ?? 0) - 1) {
+            console.log(`[Card ${index}] ⏭️ Pasando a opción ${idx + 1}`);
+            setShownOptions((prev) => [...prev, idx + 1]);
+        } else {
+            console.log(`[Card ${index}] 🏁 Todas las opciones completas → Card terminado`);
+            onComplete();
+        }
+    };
+
+    const handleCircleClick = (optIndex: number) => {
         if (!localQuestion.options) return;
         const updatedOptions = localQuestion.options.map((opt, i) => ({
             ...opt,
-            isCorrect: i === index,
+            isCorrect: i === optIndex,
         }));
         const updated = { ...localQuestion, options: updatedOptions };
         setLocalQuestion(updated);
         onChange?.(updated);
     };
 
-    const handleQuestionTextChange = ( value: string) => {
+    const handleQuestionTextChange = (value: string) => {
         const updated = { ...localQuestion, questionText: value };
         setLocalQuestion(updated);
         onChange?.(updated);
@@ -76,31 +94,33 @@ export default function QuestionCard({
         setLocalQuestion(updated);
         onChange?.(updated);
     };
-    
 
     return (
         <div
-            className={`w-full max-w-xl mx-auto my-4 rounded-2xl border shadow-lg transition-colors ${selected ? "border-blue-500" : "border-gray-200"} bg-white`}
+            className={`w-full max-w-xl mx-auto my-4 rounded-2xl border shadow-lg transition-colors ${
+                selected ? "border-blue-500" : "border-gray-200"
+            } bg-white`}
         >
             {/* Header */}
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                {/* Botón de número de pregunta */}
                 <button
-                    className={`w-8 h-8 rounded-full border flex items-center justify-center font-semibold transition-colors ${selected ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-700 border-gray-300"
-                        }`}
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center font-semibold transition-colors ${
+                        selected
+                            ? "bg-blue-500 text-white border-blue-500"
+                            : "bg-white text-gray-700 border-gray-300"
+                    }`}
                     onClick={() => setSelected(!selected)}
                 >
                     {index + 1}
                 </button>
 
-                {/* Texto de la pregunta */}
                 <div className="flex-1 px-3">
-                {editable ? (
+                    {editable ? (
                         <TypewriterInput
                             text={localQuestion.questionText}
                             speed={35}
                             onComplete={handleQuestionComplete}
-                            onChange={(value) => {handleQuestionTextChange(value)}}
+                            onChange={handleQuestionTextChange}
                         />
                     ) : (
                         <TypewriterText
@@ -111,7 +131,6 @@ export default function QuestionCard({
                     )}
                 </div>
 
-                {/* Botón de menú de tres puntos */}
                 <div className="relative">
                     <button
                         className="p-1 rounded hover:bg-gray-100 transition"
@@ -119,7 +138,6 @@ export default function QuestionCard({
                     >
                         <MoreVertical size={20} />
                     </button>
-
                     {menuOpen && (
                         <div className="absolute right-0 top-full mt-1 w-32 bg-white border rounded shadow-md z-10">
                             <button
@@ -133,37 +151,39 @@ export default function QuestionCard({
                 </div>
             </div>
 
-            {/* Content */}
+            {/* Opciones */}
             <div className="p-4 flex flex-col gap-2">
-                {localQuestion.options?.slice(0, revealedOptions).map((opt: any, idx: number) => (
+                {shownOptions.map((optIdx) => (
                     <div
-                        key={opt.optionId}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left flex flex-row items-baseline gap-4 last:mb-0 hover:bg-gray-50"
+                        key={localQuestion.options![optIdx].optionId}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left flex flex-row items-baseline gap-4"
                     >
-                        {/* Círculo clickeable */}
                         <div
-                            className={`grid place-items-center rounded-full border font-semibold w-6 h-6
-                                        transition-colors
-                                        ${opt.isCorrect ? "bg-green-500 border-green-500 text-white" : "bg-card border-gray-300 text-gray-700"}`}
-                            onClick={() => handleCircleClick(idx)}
+                            className={`grid place-items-center rounded-full border font-semibold w-6 h-6 ${
+                                localQuestion.options![optIdx].isCorrect
+                                    ? "bg-green-500 border-green-500 text-white"
+                                    : "bg-card border-gray-300 text-gray-700"
+                            }`}
+                            onClick={() => handleCircleClick(optIdx)}
                             style={{ cursor: "pointer" }}
                         >
-                            <span className="select-none text-center text-sm">{letters[idx]}</span>
+                            <span>{letters[optIdx]}</span>
                         </div>
 
-                        {/* Texto de la opción */}
                         {editable ? (
                             <TypewriterInput
-                                text={opt.text}
-                                speed={25}
-                                onComplete={handleQuestionComplete}
-                                onChange={(value) => handleOptionTextChange(idx, value)}
+                                text={localQuestion.options![optIdx].text}
+                                speed={30}
+                                onComplete={() => handleOptionComplete(optIdx)}
+                                onChange={(value) =>
+                                    handleOptionTextChange(optIdx, value)
+                                }
                             />
                         ) : (
                             <TypewriterText
-                                text={opt.text}
+                                text={localQuestion.options![optIdx].text}
                                 speed={25}
-                                onComplete={handleQuestionComplete}
+                                onComplete={() => handleOptionComplete(optIdx)}
                             />
                         )}
                     </div>

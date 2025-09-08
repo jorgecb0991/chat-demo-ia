@@ -45,7 +45,7 @@ export default function YoutubeQuizPage() {
                 setVideoThumbnail(`https://img.youtube.com/vi/${videoId}/0.jpg`);
             }
         } catch (error) {
-            console.error("URL inválida de YouTube");
+            console.error(error);
             setVideoThumbnail(null);
         }
     };
@@ -65,6 +65,7 @@ export default function YoutubeQuizPage() {
                     academicLevel,
                     language,
                     userId: "jorge",
+                    sessionId:"6438521839198142464"
                 }),
             });
 
@@ -220,7 +221,7 @@ export default function YoutubeQuizPage() {
                         type="text"
                         value={academicLevel}
                         onChange={(e) => setAcademicLevel(e.target.value)}
-                        placeholder="Ej. Secundaria, Universitario"
+                        placeholder="Ej. Pregrado, Postgrado"
                         className="mt-1"
                     />
                 </div>

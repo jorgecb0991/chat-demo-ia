@@ -1,6 +1,5 @@
 // src/pages/api/chatbot/instruction/[id].ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAuthToken } from '@/lib/auth/tokenService';
 
 /**
  * Endpoint de ejemplo para manejar una instrucción específica por su ID.

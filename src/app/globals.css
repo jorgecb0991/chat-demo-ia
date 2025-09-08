@@ -143,3 +143,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+html, body {
+  overflow-x: hidden;
+  min-height: 100%;
+}
+
+.bg-app-pattern {
+  background: url("/img/fondo1.png") center / cover no-repeat;}
+

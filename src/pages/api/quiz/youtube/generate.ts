@@ -1,6 +1,5 @@
 // app/pages/api/quiz/generate.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getAuthToken } from "@/lib/auth/tokenService";
 import { ENDPOINTS } from '@/lib/api/endpoints';
 import { apiRequest } from '@/lib/api/client';
 

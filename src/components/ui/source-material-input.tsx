@@ -34,7 +34,7 @@ export default function SourceMaterialInput({
             <label className="font-medium mb-2">Material de origen</label>
 
             <Tabs value={sourceType} onValueChange={onTypeChange} className="w-full gap-0">
-                {/* ✅ TabsList con scroll horizontal en móviles */}
+                {/*TabsList con scroll horizontal en móviles */}
                 <TabsList className="flex w-full overflow-x-auto rounded-md no-scrollbar pb-1">
                     <TabsTrigger value="topic" className="flex items-center whitespace-nowrap">
                         <Lightbulb size={16} />

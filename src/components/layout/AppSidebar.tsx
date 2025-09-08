@@ -49,9 +49,9 @@ const menuItems = [
 
 export function AppSidebar() {
     return (
-        <Sidebar className="bg-white dark:bg-utec-gray-800 border-r border-utec-gray-300">
+        <Sidebar className="bg-white border border-utec-gray-300 rounded-2xl m-6 shadow-lg flex flex-col max-h-[90vh]  overflow-hidden">
             {/* Header con logo */}
-            <SidebarHeader className="flex items-center gap-2 px-4 py-3">
+            <SidebarHeader className="flex items-center gap-2 px-4 py-3 border-b border-utec-gray-300">
                 <Image
                     src="/img/logo_blanco_utec.png"
                     alt="UTEC"
@@ -67,7 +67,7 @@ export function AppSidebar() {
             <div className="px-4 py-3 border-b border-utec-gray-300 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                     <Image
-                        src="next.svg" // 👈 puedes poner un avatar genérico
+                        src="/img/avatar1.png"
                         alt="Usuario"
                         width={40}
                         height={40}
@@ -84,8 +84,8 @@ export function AppSidebar() {
                 </div>
             </div>
 
-            {/* Navegación dinámica */}
-            <SidebarContent>
+            {/* Contenido con scroll */}
+            <SidebarContent className="flex-1 overflow-y-auto">
                 <SidebarGroup>
                     <SidebarGroupLabel>Menú</SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -105,8 +105,8 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            {/* Footer con logout */}
-            <SidebarFooter>
+            {/* Footer fijo */}
+            <SidebarFooter className="border-t border-utec-gray-300">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton className="text-red-600 hover:text-red-800 dark:hover:text-red-400">

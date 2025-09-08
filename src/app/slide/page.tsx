@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Presentation } from "lucide-react";
@@ -54,7 +55,6 @@ export default function SlideGeneratorPage() {
     const [loading, setLoading] = useState(false);
     const [loadingPlantillas, setLoadingPlantillas] = useState(true);
     const [instruccionesProfesor, setInstruccionesProfesor] = useState("");
-    const [resultado, setResultado] = useState<EstructuraSlide | null>(null);
     const [fileBytes, setFileBytes] = useState<Uint8Array | null>(null);
     const [mimeType, setMimeType] = useState<string | null>(null);
     const isYoutube = sourceType !== "file" && detectarYouTube(sourceValue);
@@ -85,7 +85,6 @@ export default function SlideGeneratorPage() {
         }
 
         setLoading(true);
-        setResultado(null);
 
         try {
             const formData = new FormData();

@@ -10,17 +10,21 @@ import EditableQuestionCard from "@/components/quiz/EditableQuestionCard";
 import VideoHeaderCard from "@/components/video/VideoHeaderCard";
 import HoverButton from "@/components/ui/HoverButton";
 import { mockQuiz } from "@/mocks/quizMocks";
-import { Button } from "@/components/ui/button"; // ✅ import de shadcn/ui
+import { Button } from "@/components/ui/button";
+import { metadata } from "@/app/layout";
 
 export default function QuizConfigPage() {
-    //const quiz = useAppSelector((state) => state.quiz.current);
-    const quiz = mockQuiz;
+    const quiz = useAppSelector((state) => state.quiz.current);
+    //const quiz = mockQuiz;
     const [currentIndex, setCurrentIndex] = useState(0);
     const [questions, setQuestions] = useState(quiz?.questions || []);
     const dispatch = useAppDispatch();
     const router = useRouter();
 
-    const handleCardComplete = () => setCurrentIndex((prev) => prev + 1);
+    const handleCardComplete = () => {
+        console.log(` Card ${currentIndex} completo → pasando al siguiente`);
+        setCurrentIndex((prev) => prev + 1);
+    };
 
     const handleCardDelete = (id: string) => {
         setQuestions((prev) => prev.filter((q) => q.questionId !== id));
@@ -80,16 +84,16 @@ export default function QuizConfigPage() {
         >
             {/* Header con video */}
             <VideoHeaderCard
-                thumbnail={quiz.videoThumbnail || ""}
-                title={quiz.title || ""}
-                description={quiz.description || ""}
-                duration="12:34"
-                source="YouTube"
-                views={quiz?.metadata?.views || ""}
-                channelName={quiz?.metadata?.channelName || ""}
-                channelAvatar={quiz?.metadata?.channelAvatar || ""}
-                videoUrl={quiz.videoUrl}
-            />
+                    thumbnail={quiz?.metadata?.videoThumbnail || ""}
+                    videoTitle={quiz?.metadata?.videoTitle || ""}
+                    description={quiz?.description || ""}
+                    duration={quiz?.metadata?.duration|| ""}
+                    publishedAgo={quiz?.metadata?.publishedAgo|| ""}
+                    views={quiz?.metadata?.views || ""}
+                    channelName={quiz?.metadata?.channelName || ""}
+                    channelAvatar={quiz?.metadata?.channelAvatar || ""}
+                    videoUrl={quiz?.videoUrl || ""}
+                />
 
             {/* Preguntas */}
             <div className="space-y-6">
@@ -110,7 +114,7 @@ export default function QuizConfigPage() {
                             <EditableQuestionCard
                                 question={q}
                                 onComplete={
-                                    index === currentIndex ? handleCardComplete : () => { }
+                                    index === currentIndex ? handleCardComplete : () => {}
                                 }
                                 index={index}
                                 onDelete={handleCardDelete}

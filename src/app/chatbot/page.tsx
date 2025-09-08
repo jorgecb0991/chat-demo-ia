@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { v4 as uuidv4 } from "uuid";
-import { MessageSquarePlus, RefreshCw, Bot, Sparkles, Loader2, Type, Code, Target, ListChecks } from "lucide-react";
+import { MessageSquarePlus, RefreshCw, Sparkles, Loader2, Type, Code, Target, ListChecks } from "lucide-react";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import SubmitButton from "@/components/common/SubmitButton"
 
