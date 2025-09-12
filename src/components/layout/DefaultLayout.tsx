@@ -8,6 +8,8 @@ import {
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
+import { Toaster } from "sonner"; 
+
 
 interface DefaultLayoutProps {
     title?: string;
@@ -44,7 +46,7 @@ export default function DefaultLayout({
                 </div>
             )}
 
-            <Card className="w-full max-w-7xl mx-auto shadow-xl border border-gray-200 flex flex-col flex-1 min-h-0 gap-2">
+            <Card className="mx-auto shadow-xl border border-gray-200 bg-white/90 backdrop-blur-sm flex flex-col flex-1 min-h-0 gap-2">
                 <CardHeader>
                     {title && (
                         <CardTitle className="text-2xl md:text-3xl font-bold text-blue-900 flex items-center gap-2">
@@ -66,6 +68,8 @@ export default function DefaultLayout({
                     </div>
                 </CardContent>
             </Card>
+            {/* ✅ Toaster global disponible en toda la app */}
+            <Toaster richColors position="top-right" />
         </div>
     );
 }

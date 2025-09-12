@@ -3,13 +3,13 @@ import { useEffect, useState, useRef } from "react";
 import TypewriterText from "@/components/common/TypewriterText";
 import TypewriterInput from "@/components/common/TypewriterInput";
 import { MoreVertical, Trash2 } from "lucide-react";
-import { QuizQuestion } from "@/store/slices/quizSlice";
+import { QuizQuestion } from "@/types/quiz";
 
 interface QuestionCardProps {
     question: QuizQuestion;
     index: number;
     onComplete: () => void;
-    onDelete?: (id: string) => void;
+    onDelete?: (id: number) => void;
     editable?: boolean;
     onChange?: (updated: QuizQuestion) => void;
 }
@@ -97,18 +97,16 @@ export default function EditableQuestionCard({
 
     return (
         <div
-            className={`w-full max-w-xl mx-auto my-4 rounded-2xl border shadow-lg transition-colors ${
-                selected ? "border-blue-500" : "border-gray-200"
-            } bg-white`}
+            className={`w-full mx-auto my-4 rounded-2xl border shadow-lg transition-colors ${selected ? "border-blue-500" : "border-gray-200"
+                } bg-white`}
         >
             {/* Header */}
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <button
-                    className={`w-8 h-8 rounded-full border flex items-center justify-center font-semibold transition-colors ${
-                        selected
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center font-semibold transition-colors ${selected
                             ? "bg-blue-500 text-white border-blue-500"
                             : "bg-white text-gray-700 border-gray-300"
-                    }`}
+                        }`}
                     onClick={() => setSelected(!selected)}
                 >
                     {index + 1}
@@ -118,14 +116,14 @@ export default function EditableQuestionCard({
                     {editable ? (
                         <TypewriterInput
                             text={localQuestion.questionText}
-                            speed={35}
+                            speed={25}
                             onComplete={handleQuestionComplete}
                             onChange={handleQuestionTextChange}
                         />
                     ) : (
                         <TypewriterText
                             text={localQuestion.questionText}
-                            speed={35}
+                            speed={25}
                             onComplete={handleQuestionComplete}
                         />
                     )}
@@ -151,19 +149,37 @@ export default function EditableQuestionCard({
                 </div>
             </div>
 
-            {/* Opciones */}
+            {/* Opciones o Respuesta libre */}
             <div className="p-4 flex flex-col gap-2">
-                {shownOptions.map((optIdx) => (
+                {localQuestion.type === "short" ? (
+                    // Caja vacía para respuesta libre
+                    <div className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        {editable ? (
+                            <input
+                                type="text"
+                                className="w-full border-0 bg-transparent px-1 py-2 text-gray-900 placeholder-gray-400 focus:border-b border-blue-500 focus:ring-0 focus:outline-none transition duration-200"
+                                placeholder="Escribe tu respuesta aquí..."
+                                value={localQuestion.suggestedAnswer}
+                                onChange={(e) => {
+                                    const updated = { ...localQuestion, answerText: e.target.value };
+                                    setLocalQuestion(updated);
+                                    onChange?.(updated);
+                                }}
+                            />
+                        ) : (
+                            <span className="text-gray-500 italic">Respuesta pendiente...</span>
+                        )}
+                    </div>
+                ) : (shownOptions.map((optIdx) => (
                     <div
                         key={localQuestion.options![optIdx].optionId}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left flex flex-row items-baseline gap-4"
                     >
                         <div
-                            className={`grid place-items-center rounded-full border font-semibold w-6 h-6 ${
-                                localQuestion.options![optIdx].isCorrect
+                            className={`grid place-items-center rounded-full border font-semibold w-6 h-6 ${localQuestion.options![optIdx].isCorrect
                                     ? "bg-green-500 border-green-500 text-white"
                                     : "bg-card border-gray-300 text-gray-700"
-                            }`}
+                                }`}
                             onClick={() => handleCircleClick(optIdx)}
                             style={{ cursor: "pointer" }}
                         >
@@ -173,7 +189,7 @@ export default function EditableQuestionCard({
                         {editable ? (
                             <TypewriterInput
                                 text={localQuestion.options![optIdx].text}
-                                speed={30}
+                                speed={25}
                                 onComplete={() => handleOptionComplete(optIdx)}
                                 onChange={(value) =>
                                     handleOptionTextChange(optIdx, value)
@@ -187,7 +203,7 @@ export default function EditableQuestionCard({
                             />
                         )}
                     </div>
-                ))}
+                )))}
             </div>
         </div>
     );

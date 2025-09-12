@@ -2,16 +2,16 @@
 
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useState } from "react";
-import { QuizQuestion, setQuiz } from "@/store/slices/quizSlice";
+import {QuizQuestion} from "@/types/quiz"
+import { setQuiz } from "@/store/slices/quizSlice";
 import { Save, ClipboardList, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import EditableQuestionCard from "@/components/quiz/EditableQuestionCard";
 import VideoHeaderCard from "@/components/video/VideoHeaderCard";
 import HoverButton from "@/components/ui/HoverButton";
-import { mockQuiz } from "@/mocks/quizMocks";
+//import { mockQuiz } from "@/mocks/quizMocks";
 import { Button } from "@/components/ui/button";
-import { metadata } from "@/app/layout";
 
 export default function QuizConfigPage() {
     const quiz = useAppSelector((state) => state.quiz.current);
@@ -26,20 +26,22 @@ export default function QuizConfigPage() {
         setCurrentIndex((prev) => prev + 1);
     };
 
-    const handleCardDelete = (id: string) => {
+    const handleCardDelete = (id: number) => {
         setQuestions((prev) => prev.filter((q) => q.questionId !== id));
     };
 
     const handleAddQuestion = (insertIndex: number) => {
+        
+        let numOptions = questions[0]?.options?.length
         const newQuestion: QuizQuestion = {
-            questionId: crypto.randomUUID(),
+            questionId: questions.length,
             order: questions.length,
             type: "multiple",
             questionText: "",
-            options: Array(4)
+            options: Array(numOptions)
                 .fill(null)
-                .map(() => ({
-                    optionId: crypto.randomUUID(),
+                .map((_, index) => ({
+                    optionId: index,
                     text: "",
                     isCorrect: false,
                 })),
@@ -101,9 +103,9 @@ export default function QuizConfigPage() {
                     <Button
                         onClick={handleSaveQuiz}
                         variant="default"
-                        className="gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow"
+                        className="bg-blue-900 hover:bg-blue-800 text-white py-3 px-7 rounded-lg"
                     >
-                        <Save size={18} />
+                        <Save className="w-5 h-5" />
                         Guardar
                     </Button>
                 </div>

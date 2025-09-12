@@ -10,6 +10,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {ApiResponse} from '@/types/api'
+
 
 import { v4 as uuidv4 } from "uuid";
 import { MessageSquarePlus, RefreshCw, Sparkles, Loader2, Type, Code, Target, ListChecks } from "lucide-react";
@@ -68,10 +70,24 @@ export default function CreateChatbotPage() {
                 body: JSON.stringify({ intention }),
             });
 
-            if (!res.ok) throw new Error("Error al crear chatbot");
+            // Leer la respuesta JSON una sola vez
+            const content: ApiResponse = await res.json();
 
-            const resultado = await res.json();
-            setResponse(resultado.data.instruction || "No hay respuesta del servidor.");
+            // Combinar la verificación de éxito de la respuesta HTTP y la del backend
+            if (!res.ok || !content.success) {
+                const errorMessage = content.error?.message || "Error desconocido en el servidor";
+                throw new Error(errorMessage);
+            }
+
+            // Desestructuración para acceso más limpio a los datos
+            const { data } = content;
+
+            // Asegurarse de que los datos tienen el formato esperado
+            if (data?.instruction) {
+                setResponse(data.instruction);
+            } else {
+                setResponse("No hay respuesta del servidor.");
+            }
         } catch (error) {
             setResponse("Error al obtener respuesta del servidor.");
             console.error(error);
@@ -79,7 +95,7 @@ export default function CreateChatbotPage() {
             setLoading(false);
         }
     };
-
+    
     const handleClear = () => {
         setIntention("");
         setResponse(null);

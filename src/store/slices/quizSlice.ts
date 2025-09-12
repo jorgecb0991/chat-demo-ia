@@ -1,49 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-export interface QuizOption {
-    optionId: string;
-    text: string;
-    isCorrect?: boolean;
-}
-
-export interface QuizQuestion {
-    questionId: string;
-    order: number;
-    type: 'multiple' | 'short' | 'mixed';
-    questionText: string;
-    options?: QuizOption[];
-    suggestedAnswer?: string;
-    explanation?: string;
-}
-
-export interface QuizMetadata {
-    videoId: string;
-    videoThumbnail?: string;
-    channelTitle?: string;
-    tags?: string[];
-    views?: string;
-    publishedAt?: string;
-    publishedAgo?: string;
-    channelName?: string;
-    channelAvatar?: string;
-    likes?: string;
-    comments?: string;
-    duration?: string;
-    videoTitle?: string;
-    description?: string;
-}
-
-export interface Quiz {
-    quizId: string;
-    title?: string;
-    description?: string;
-    videoUrl: string;
-    language: string;
-    academicLevel?: string;
-    instructions?: string;
-    questions: QuizQuestion[];
-    metadata?: QuizMetadata;
-}
+import { Quiz } from '@/types/quiz';
 
 interface QuizState {
     current: Quiz | null;

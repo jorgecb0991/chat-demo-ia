@@ -11,49 +11,160 @@ import SubmitButton from "@/components/common/SubmitButton";
 import ResultCard from "@/components/quiz/ResultCard";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
+import {
+    QuizEvaluationResult,
+    QuestionEvaluationResult,
+    QuizQuestionOption,
+    StudentAnswer,
+    StudentMultipleChoiceAnswer
+} from "@/types/quiz";
+import { quizMock } from "@/mocks/quizMocks";
+import {ApiResponse} from "@/types/api"
 
 export default function PlayYoutubeQuizPage() {
     const dispatch = useAppDispatch();
     const quiz = useAppSelector((state) => state.quiz.current);
+    //const quiz = quizMock;
 
-    const [answers, setAnswers] = useState<Record<string, string>>({});
+    // El estado 'answers' ahora almacena el objeto StudentAnswer
+    const [answers, setAnswers] = useState<Record<number, StudentAnswer>>({});
+    const [evaluationResult, setEvaluationResult] = useState<QuizEvaluationResult | null>(null);
     const [score, setScore] = useState<number | null>(null);
     const [showConfetti, setShowConfetti] = useState(false);
 
     const { width, height } = useWindowSize();
 
-    const handleAnswer = (questionId: string, optionId: string) => {
-        setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+    // La función handleAnswer ahora acepta el objeto StudentAnswer
+    const handleAnswer = (questionId: string | number, answer: StudentAnswer) => {
+        setAnswers((prev) => ({ ...prev, [questionId]: answer }));
     };
 
-    const handleSubmit = async () => {
-        await new Promise((r) => setTimeout(r, 1000));
-
+    //Evaluación
+    /**
+     * Evalúa localmente un quiz de opción múltiple.
+     * @returns Un objeto de tipo QuizEvaluationResult.
+     */
+    const evaluateMultipleChoiceQuiz = (): QuizEvaluationResult => {
         let correctCount = 0;
+        const evaluatedQuestions: QuestionEvaluationResult[] = [];
+
         quiz?.questions.forEach((q) => {
-            const selected = answers[q.questionId];
-            const correct = q.options?.find((opt) => opt.isCorrect);
-            if (selected && selected === correct?.optionId) {
+            const studentAnswer = answers[q.questionId];
+            let isCorrect = false;
+
+            // Validar que la respuesta sea de tipo StudentMultipleChoiceAnswer
+            if (studentAnswer && "optionId" in studentAnswer) {
+                const mcqOptions: QuizQuestionOption[] | undefined = q.options; // Safely access options
+                const correctOption = mcqOptions?.find((opt) => opt.isCorrect);
+
+                isCorrect = (studentAnswer as StudentMultipleChoiceAnswer).optionId === correctOption?.optionId;
+            }
+
+            if (isCorrect) {
                 correctCount++;
             }
+
+            evaluatedQuestions.push({
+                questionId: q.questionId,
+                correct: isCorrect,
+                feedback: isCorrect ? "Respuesta correcta." : "Respuesta incorrecta.",
+                score: isCorrect ? 10 : 0,
+            });
         });
 
-        if (!quiz || !quiz.questions || quiz.questions.length === 0) {
-            setScore(0);
-        } else {
-            const percentage = Math.round(
-                (correctCount / quiz.questions.length) * 100
-            );
-            setScore(percentage);
+        const totalScore = quiz && quiz.questions.length > 0 ?
+            Math.round((correctCount / quiz.questions.length) * 100) : 0;
 
-            // 🎉 Activa confeti si pasa con 50%+
-            if (percentage >= 50) {
-                setShowConfetti(true);
+        return {
+            quizId: quiz?.quizId || "",
+            studentName: quiz?.studentName || "Alumno",
+            totalScore: totalScore,
+            feedback: totalScore >= 50 ? "¡Felicitaciones! 🎉" : "Sigue practicando 💪",
+            questions: evaluatedQuestions,
+        };
+    };
+    const evaluateWithAgent = async (): Promise<QuizEvaluationResult | null> => {
+        try {
+            const response = await fetch("/api/quiz/evaluate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quiz, answers }),
+            });
+            
+            // ✨ Leer la respuesta una sola vez
+            const content: ApiResponse = await response.json();
+    
+            // ✨ Lógica unificada para manejar éxito y errores
+            if (!response.ok || !content.success) {
+                const errorMessage = content.error?.message || "Error al evaluar con agente.";
+                throw new Error(errorMessage);
             }
+
+            // ✨ Acceder al resultado desde la propiedad 'data'
+            const result: QuizEvaluationResult = content?.data?.evaluation;
+
+            if (result) {
+                return result;
+            } else {
+                throw new Error("Respuesta inesperada del servidor: 'evaluation' no encontrado.");
+            }
+        } catch (error) {
+            console.error("Error al evaluar con agente:", error);
+            // Manejar el error y retornar null para el caso de falla
+            return null;
         }
     };
 
-    // ⏱️ Auto-apagar confeti después de 5 segundos
+    //Detectar si todas son de opción múltiple
+    const isAllMultipleChoice = () =>
+        quiz?.questions.every((q) => q.type === "multiple") ?? false;
+
+    //Manejar envío
+    const handleSubmit = async () => {
+        await new Promise((r) => setTimeout(r, 1000));
+
+        if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+            setEvaluationResult({
+                quizId: quiz?.quizId || "",
+                studentName: quiz?.studentName || "Jorge",
+                totalScore: 0,
+                feedback: "No hay preguntas para evaluar.",
+                questions: [],
+            });
+            return;
+        }
+
+        let evaluationData: QuizEvaluationResult | null = null;
+
+        if (isAllMultipleChoice()) {
+            evaluationData = evaluateMultipleChoiceQuiz();
+        } else {
+            evaluationData = await evaluateWithAgent();
+        }
+
+        if (evaluationData) {
+            //Normalización del score en el frontend
+            if (evaluationData.totalScore <= 1) {
+                evaluationData.totalScore = Math.round(evaluationData.totalScore * 100);
+            }
+
+            setEvaluationResult(evaluationData);
+            if (evaluationData.totalScore >= 50) {
+                setShowConfetti(true);
+            }
+        } else {
+            setEvaluationResult({
+                quizId: quiz?.quizId || "",
+                studentName: quiz?.studentName || "Jorge",
+                totalScore: 0,
+                feedback: "Error al evaluar el cuestionario.",
+                questions: [],
+            });
+        }
+    };
+
+
+    //Auto-apagar confeti después de 5 segundos
     useEffect(() => {
         if (showConfetti) {
             const timer = setTimeout(() => setShowConfetti(false), 10000);
@@ -61,23 +172,32 @@ export default function PlayYoutubeQuizPage() {
         }
     }, [showConfetti]);
 
+    // Use evaluationResult to render content
+    const totalCorrect = evaluationResult && evaluationResult.questions
+        ? evaluationResult.questions.filter((q) => q.correct).length
+        : 0;
+
+    const totalIncorrect = evaluationResult && evaluationResult.questions
+        ? evaluationResult.questions.filter((q) => !q.correct).length
+        : 0;
+
     return (
         <DefaultLayout
             title="Cuestionario"
             titleIcon={<BookOpenCheck className="w-6 h-6" />}
         >
-            {/* 🎉 Confetti celebration */}
+            {/*Confetti celebration */}
             {showConfetti && <Confetti width={width} height={height} />}
 
             <div className="flex flex-col gap-6">
                 {/* Resultado */}
-                {score !== null && (
+                {evaluationResult && (
                     <ResultCard
-                        studentName="jorge"
-                        scorePercent={score}
-                        correct={2}
-                        incorrect={3}
-                        feedback={score >= 50 ? "¡Felicitaciones! 🎉" : "Sigue practicando 💪"}
+                        studentName={evaluationResult.studentName}
+                        scorePercent={evaluationResult.totalScore}
+                        correct={totalCorrect}
+                        incorrect={totalIncorrect}
+                        feedback={evaluationResult.feedback}
                     />
                 )}
 
@@ -86,8 +206,8 @@ export default function PlayYoutubeQuizPage() {
                     thumbnail={quiz?.metadata?.videoThumbnail || ""}
                     videoTitle={quiz?.metadata?.videoTitle || ""}
                     description={quiz?.description || ""}
-                    duration={quiz?.metadata?.duration|| ""}
-                    publishedAgo={quiz?.metadata?.publishedAgo|| ""}
+                    duration={quiz?.metadata?.duration || ""}
+                    publishedAgo={quiz?.metadata?.publishedAgo || ""}
                     views={quiz?.metadata?.views || ""}
                     channelName={quiz?.metadata?.channelName || ""}
                     channelAvatar={quiz?.metadata?.channelAvatar || ""}
@@ -105,14 +225,14 @@ export default function PlayYoutubeQuizPage() {
                             question={q}
                             index={index}
                             onAnswer={handleAnswer}
-                            selectedAnswer={answers[q.questionId]}
-                            showResults={score !== null}
+                            // Se pasa el objeto de respuesta completo.
+                            studentAnswer={answers[q.questionId]}
+                            showResults={evaluationResult !== null}
                         />
                     ))}
                 </div>
 
-                {/* Botón enviar */}
-                {score === null && (
+                {evaluationResult === null && (
                     <SubmitButton
                         text="Enviar Respuestas"
                         loadingText="Revisando..."
@@ -124,4 +244,5 @@ export default function PlayYoutubeQuizPage() {
             </div>
         </DefaultLayout>
     );
+
 }

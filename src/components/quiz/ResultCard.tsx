@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, Check, X } from "lucide-react";
+import { RotateCcw, Check, X, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 
@@ -12,8 +12,8 @@ interface ResultCardProps {
     feedback: string;
     quizTitle?: string;
     onRestart?: () => void;
-    bgColor?: string; // fondo sólido
-    gradientColors?: string[]; // fondo degradado
+    bgColor?: string; // fondo sólido personalizado
+    gradientColors?: string[]; // fondo degradado personalizado
 }
 
 export default function ResultCard({
@@ -27,72 +27,76 @@ export default function ResultCard({
     bgColor,
     gradientColors,
 }: ResultCardProps) {
-    // degradado azul suave por defecto
-    const defaultGradient = ["from-blue-100", "via-blue-200", "to-blue-300"];
+    // Gradientes suaves por defecto
+    const defaultPassGradient = ["from-emerald-100", "via-teal-100", "to-sky-100"];
+    const defaultFailGradient = ["from-amber-100", "via-orange-100", "to-yellow-100"];
 
-    const hasGradient = gradientColors || !bgColor;
+    // Determinar aprobado/desaprobado
+    const isPassed = scorePercent >= 70;
+
+    const effectiveGradient =
+        gradientColors ||
+        (isPassed ? defaultPassGradient : defaultFailGradient);
+
+    const hasGradient = !bgColor;
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={clsx(
-                "group relative rounded-xl p-6 flex flex-col shadow-lg border",
-                hasGradient
-                    ? `bg-gradient-to-br ${(gradientColors || defaultGradient).join(" ")}`
-                    : bgColor
+                "rounded-2xl p-6 shadow-lg border bg-gradient-to-br",
+                hasGradient ? effectiveGradient.join(" ") : bgColor
             )}
         >
-            {/* Línea superior */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 hidden h-4 overflow-clip rounded-t-xl group-data-active:block">
-                <div className="h-1.5 bg-primary"></div>
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+                <Award className="w-6 h-6 text-primary" />
+                <h2 className="text-lg font-semibold text-gray-900">{quizTitle}</h2>
             </div>
 
-            {/* Badge del Quiz */}
-            <div className="flex items-center gap-2 self-start px-3 py-1.5 rounded-full border bg-orange-50 text-orange-600 text-xs font-semibold">
-                <span>{quizTitle.toUpperCase()}</span>
-            </div>
-
-            {/* Título */}
-            <h3 className="mt-4 text-xl font-semibold text-black dark:text-black">
-                {scorePercent >= 70
-                    ? `¡Excelente, ${studentName}!`
-                    : `Buen esfuerzo, ${studentName}`}
+            {/* Mensaje motivacional */}
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                {isPassed
+                    ? `¡Excelente trabajo, ${studentName}!`
+                    : `Buen esfuerzo, ${studentName}. ¡Sigue practicando!`}
             </h3>
 
-            {/* Feedback y porcentaje */}
-            <div className="mt-3 flex flex-col md:flex-row gap-6 items-start">
-                <p className="flex-1 text-black dark:text-black">{feedback}</p>
-                <p className="text-5xl font-bold text-primary">{scorePercent}%</p>
+            {/* Feedback */}
+            <p className="text-gray-800 mb-4">{feedback}</p>
+
+            {/* Puntaje grande */}
+            <div className="text-5xl font-extrabold text-primary mb-6">
+                {scorePercent}%
             </div>
 
             {/* Estadísticas */}
-            <div className="mt-4 flex flex-row items-center gap-4 text-sm">
+            <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                     <div className="grid size-6 place-items-center rounded-full bg-green-500">
                         <Check className="w-3.5 h-3.5 stroke-white" />
                     </div>
-                    <span>{correct} correct</span>
+                    <span>{correct} correctas</span>
                 </div>
-                <div className="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
+                <div className="h-6 w-px bg-gray-400"></div>
                 <div className="flex items-center gap-2">
-                    <div className="grid size-6 place-items-center rounded-full bg-red-500">
+                    <div className="grid size-6 place-items-center rounded-full bg-red-400">
                         <X className="w-3.5 h-3.5 stroke-white" />
                     </div>
-                    <span>{incorrect} incorrect</span>
+                    <span>{incorrect} incorrectas</span>
                 </div>
             </div>
 
-            {/* Botón Restart */}
+            {/* Botón Reiniciar */}
             {onRestart && (
                 <div className="mt-6">
                     <button
                         type="button"
                         onClick={onRestart}
-                        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none min-w-28 bg-accent text-accent-foreground hover:bg-accent/90 border border-transparent h-10 px-4 py-2"
+                        className="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-white px-4 py-2 hover:opacity-90 transition"
                     >
                         <RotateCcw className="w-4 h-4 mr-2" />
-                        Restart
+                        Intentar de nuevo
                     </button>
                 </div>
             )}

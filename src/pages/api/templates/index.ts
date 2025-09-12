@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { apiRequest } from '@/lib/api/client';
 import { ENDPOINTS } from '@/lib/api/endpoints';
+import {ApiResponse} from '@/types/api'
 
 interface Plantilla {
   nombre: string;
@@ -9,12 +10,7 @@ interface Plantilla {
   disponible: boolean;
 }
 
-interface data {
-  templates:[],
-  status:string
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<ApiResponse>) {
   if (req.method === 'GET') {
     return handleGetPlantillas(req, res);
   }
@@ -25,15 +21,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleGetPlantillas(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Llamada al backend usando apiRequest que maneja el token
-    const data: data = await apiRequest(ENDPOINTS.ppt.template.list, { method: 'GET' });
+    const responseData: ApiResponse = await apiRequest(ENDPOINTS.templates.list, { method: 'GET' });
 
-    if (data.status !== 'OK' || !Array.isArray(data.templates)) {
+    if (!responseData.success || !Array.isArray(responseData.data)) {
       throw new Error('Respuesta inválida del backend Python');
     }
 
-    // Mapear las plantillas al formato esperado por el frontend
-    const plantillas: Plantilla[] = data.templates.map((t: any) => ({
+    const plantillas: Plantilla[] = responseData.data.map((t: any) => ({
       nombre: t.display_name,
       preview: `data:image/png;base64,${t.image_bytes}`,
       archivo: t.name,
@@ -43,10 +37,8 @@ async function handleGetPlantillas(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json(plantillas);
 
   } catch (error) {
-    console.error('Error al obtener plantillas del backend Python:', error);
-    return res.status(500).json({
-      mensaje: 'Error interno al obtener plantillas',
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    });
+    console.error("Error al obtener plantillas del backend Python:", error);
+    // ⚠️ Siempre devolvemos un array, aunque sea vacío, para no romper el front
+    return res.status(200).json([]);
   }
 }

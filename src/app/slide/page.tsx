@@ -3,10 +3,8 @@
 import React from 'react';
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Presentation } from "lucide-react";
+import { Presentation, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -16,17 +14,19 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    CardDescription,
-} from "@/components/ui/card";
-
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Label } from "@/components/ui/label";
 import SourceMaterialInput from "@/components/ui/source-material-input";
 import DefaultLayout from "@/components/layout/DefaultLayout";
+import SubmitButton from "@/components/common/SubmitButton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 interface Slide {
     titulo: string;
@@ -58,25 +58,29 @@ export default function SlideGeneratorPage() {
     const [fileBytes, setFileBytes] = useState<Uint8Array | null>(null);
     const [mimeType, setMimeType] = useState<string | null>(null);
     const isYoutube = sourceType !== "file" && detectarYouTube(sourceValue);
+    const [codProgram, setCodProgram] = useState("1");
 
     useEffect(() => {
-        const cargarPlantillas = async () => {
-            try {
-                const response = await fetch("/api/ppt/get-api-plantillas");
-                const data = await response.json();
-                setPlantillas(data);
-                if (data.length > 0) {
-                    setPlantillaSeleccionada(data[0].nombre);
-                }
-            } catch (error) {
-                console.error("Error cargando plantillas:", error);
-                toast.error("No se pudieron cargar las plantillas.");
-            } finally {
-                setLoadingPlantillas(false);
-            }
-        };
+
         cargarPlantillas();
     }, []);
+
+    const cargarPlantillas = async () => {
+        try {
+            setPlantillas([])
+            const response = await fetch("/api/templates");
+            const data = await response.json();
+            setPlantillas(data);
+            if (data.length > 0) {
+                setPlantillaSeleccionada(data[0].nombre);
+            }
+        } catch (error) {
+            console.error("Error cargando plantillas:", error);
+            toast.error("No se pudieron cargar las plantillas.");
+        } finally {
+            setLoadingPlantillas(false);
+        }
+    };
 
     const generarSlides = async () => {
         if (sourceType !== "file" && (!sourceValue.trim() || !titulo.trim())) {
@@ -92,6 +96,7 @@ export default function SlideGeneratorPage() {
             formData.append("slide_count", numSlides.toString());
             formData.append("template", plantillaSeleccionada);
             formData.append("sourceValue", sourceValue);
+            formData.append("codProgram", codProgram);
 
             if (instruccionesProfesor.trim()) {
                 formData.append("instruction_teacher", instruccionesProfesor.trim());
@@ -116,16 +121,14 @@ export default function SlideGeneratorPage() {
                 );
             }
 
-            const response = await fetch("/api/ppt/generate-ppt", {
+            const response = await fetch("/api/presentations", {
                 method: "POST",
                 body: formData,
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(
-                    `Error: ${response.status} ${response.statusText}. ${errorText}`
-                );
+                const data = await response.json();
+                throw new Error(data.message || "Error desconocido");
             }
 
             const blob = await response.blob();
@@ -139,11 +142,8 @@ export default function SlideGeneratorPage() {
 
             toast.success("La presentación se generó correctamente.");
         } catch (error) {
-            console.error("Error al generar slides:", error);
-            toast.error(
-                "Ocurrió un error al generar la presentación. " +
-                (error as Error).message
-            );
+            console.error(error);
+            toast.error("No se pudo generar la presentación. Intenta de nuevo.");
         } finally {
             setLoading(false);
         }
@@ -189,20 +189,21 @@ export default function SlideGeneratorPage() {
                 ) : undefined
             }
         >
-            
-                <div className="space-y-6">
-                    <SourceMaterialInput
-                        sourceType={sourceType}
-                        onTypeChange={setSourceType}
-                        sourceValue={sourceValue}
-                        onValueChange={(value) => setSourceValue(value)}
-                        onFileChange={(bytes, type) => {
-                            setFileBytes(bytes);
-                            setMimeType(type);
-                        }}
-                    />
 
-                    <div className="flex flex-col space-y-2">
+            <div className="space-y-4">
+                <SourceMaterialInput
+                    sourceType={sourceType}
+                    onTypeChange={setSourceType}
+                    sourceValue={sourceValue}
+                    onValueChange={(value) => setSourceValue(value)}
+                    onFileChange={(bytes, type) => {
+                        setFileBytes(bytes);
+                        setMimeType(type);
+                    }}
+                />
+                <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
+                    {/* Título */}
+                    <div className="flex-1 flex flex-col">
                         <Label htmlFor="titulo">Título de la presentación</Label>
                         <Input
                             id="titulo"
@@ -210,11 +211,13 @@ export default function SlideGeneratorPage() {
                             value={titulo}
                             onChange={(e) => setTitulo(e.target.value)}
                             placeholder="Ej. Conceptos clave sobre energía en física"
+                            className="mt-1"
                         />
                     </div>
 
-                    <div className="flex flex-col space-y-2">
-                        <Label htmlFor="numSlides">Número de slides sugerido</Label>
+                    {/* # Slides */}
+                    <div className="w-28 flex flex-col">
+                        <Label htmlFor="numSlides"># Slides</Label>
                         <Input
                             id="numSlides"
                             type="number"
@@ -222,79 +225,124 @@ export default function SlideGeneratorPage() {
                             onChange={(e) => setNumSlides(Number(e.target.value))}
                             min={1}
                             max={20}
+                            className="mt-1"
                         />
                     </div>
 
-                    <div className="flex flex-col space-y-2">
-                        <Label htmlFor="instruccionesProfesor">
-                            Instrucciones adicionales del profesor (opcional)
-                        </Label>
-                        <Textarea
-                            id="instruccionesProfesor"
-                            rows={4}
-                            value={instruccionesProfesor}
-                            onChange={(e) => setInstruccionesProfesor(e.target.value)}
-                            placeholder="Ej. Enfocar la presentación en aplicaciones en ingeniería civil"
-                        />
+                    {/* Nivel académico */}
+                    <div className="w-40 flex flex-col">
+                        <Label htmlFor="program">Nivel académico</Label>
+                        <Select value={codProgram} onValueChange={setCodProgram}>
+                            <SelectTrigger id="program" className="mt-1">
+                                <SelectValue placeholder="Selecciona nivel" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="1">Pregrado</SelectItem>
+                                <SelectItem value="2">Postgrado</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
+                </div>
 
-                    <div className="flex flex-col space-y-2">
-                        <Label>Seleccionar Plantilla</Label>
-                        {loadingPlantillas ? (
-                            <p className="text-sm text-muted-foreground">Cargando plantillas...</p>
-                        ) : (
-                            <div className="mt-2">
-                                <Select
-                                    value={plantillaSeleccionada}
-                                    onValueChange={setPlantillaSeleccionada}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona una plantilla" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {plantillas.length > 0 ? (
-                                            plantillas.map((plantilla) => (
-                                                <SelectItem key={plantilla.nombre} value={plantilla.nombre}>
-                                                    {plantilla.nombre}
-                                                </SelectItem>
-                                            ))
-                                        ) : (
-                                            <SelectItem value="none" disabled>
-                                                No hay plantillas disponibles
-                                            </SelectItem>
-                                        )}
-                                    </SelectContent>
-                                </Select>
+                {/* Instrucciones */}
+                <div className="flex flex-col">
+                    <Label htmlFor="instruccionesProfesor">
+                        Instrucciones adicionales del profesor (opcional)
+                    </Label>
+                    <Textarea
+                        id="instruccionesProfesor"
+                        rows={3}
+                        value={instruccionesProfesor}
+                        onChange={(e) => setInstruccionesProfesor(e.target.value)}
+                        placeholder="Ej. Enfocar la presentación en aplicaciones en ingeniería civil"
+                        className="resize-none mt-1"
+                    />
+                </div>
 
-                                {plantillaSeleccionada && (
-                                    <Card className="mt-4 gap-2">
-                                        <CardHeader>
-                                            <CardTitle>Vista previa</CardTitle>
-                                            <CardDescription>
-                                                Plantilla seleccionada: {plantillaSeleccionada}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="relative w-full aspect-video     rounded">
-                                                <Image
-                                                    src={plantillas.find((p) => p.nombre === plantillaSeleccionada)?.preview || ""}
-                                                    alt={`Preview ${plantillaSeleccionada}`}
-                                                    fill
-                                                    className="object-contain"
-                                                />
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                )}
-                            </div>
+                {/* Plantilla y vista previa */}
+                <div className="flex flex-col space-y-2">
+                    <div className="flex items-center gap-2">
+                        <Label>Seleccionar Plantilla : </Label>
+                        {plantillaSeleccionada && (
+                            <span className="text-sm font-medium text-blue-600">
+                                {plantillaSeleccionada}
+                            </span>
                         )}
                     </div>
-
-                    <Button onClick={generarSlides} disabled={loading || loadingPlantillas}>
-                        {loading ? "Generando..." : "Generar presentación"}
-                    </Button>
+                    {loadingPlantillas ? (
+                        <p className="text-sm text-muted-foreground">Cargando plantillas...</p>
+                    ) : plantillas.length === 0 ? (
+                        <Alert variant="destructive" className="mt-4">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Error</AlertTitle>
+                            <AlertDescription>
+                                No se pudieron cargar las plantillas. Intenta de nuevo más tarde.
+                            </AlertDescription>
+                        </Alert>
+                    ) : (
+                        <div className="mt-1">
+                            {/* Carrusel de plantillas en fila */}
+                            <Carousel
+                                opts={{ align: "start" }}
+                                className="w-full"
+                            >
+                                <CarouselContent className="gap-2">
+                                    {plantillas.map((plantilla) => (
+                                        <CarouselItem key={plantilla.nombre} className="md:basis-1/2 lg:basis-1/3">
+                                            <div
+                                                className={`group relative aspect-[16/9] rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300 ${plantillaSeleccionada === plantilla.nombre
+                                                    ? "border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-300 ring-opacity-50"
+                                                    : "border-transparent hover:border-gray-300"
+                                                    }`}
+                                                onClick={() => setPlantillaSeleccionada(plantilla.nombre)}
+                                            >
+                                                <Image
+                                                    src={plantilla.preview}
+                                                    alt={plantilla.nombre}
+                                                    fill
+                                                    className="object-contain select-none"
+                                                />
+                                                {plantillaSeleccionada === plantilla.nombre && (
+                                                    <div className="absolute top-2 right-2 rounded-full bg-blue-500 p-1 z-20">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            className="lucide lucide-check size-4 text-white"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <path d="M20 6 9 17l-5-5"></path>
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious />
+                                <CarouselNext />
+                            </Carousel>
+                        </div>
+                    )}
                 </div>
-            
+
+                <SubmitButton
+                    text="Generar presentación"
+                    loadingText="Generando..."
+                    size="lg"
+                    onClick={generarSlides}
+                    className=" py-4"
+                    baseColor="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
+                />
+
+            </div>
+
         </DefaultLayout>
     );
 }

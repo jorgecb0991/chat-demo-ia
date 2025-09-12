@@ -50,10 +50,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const backendFormData = new FormData();
     
     // Mapeamos campos del frontend (camelCase) al backend (snake_case)
-    backendFormData.append("source_type", sourceTypeForBackend); // Usamos el tipo determinado
+    backendFormData.append("source_type", sourceTypeForBackend);
     backendFormData.append("title", fields.title as string);
     backendFormData.append("slide_count", fields.slide_count as string);
     backendFormData.append("template", fields.template as string);
+    backendFormData.append("cod_program", fields.codProgram as string);
     backendFormData.append("user_id", "jorge"); // Valor hardcodeado por ahora
     backendFormData.append("session_id", "7999306082616868864"); // Valor hardcodeado por ahora
     
@@ -84,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Enviamos la solicitud al backend Python
-    const response = await fetch(ENDPOINTS.ppt.generate, {
+    const response = await fetch(ENDPOINTS.presentations.create, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`, // Autenticación Bearer token
@@ -94,8 +95,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Manejo de errores del backend Python
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error desde backend Python: ${response.status} ${response.statusText}. ${errorText}`);
+      let userMessage = "No se pudo generar la presentación. Intenta nuevamente más tarde.";
+      try {
+        const data = await response.json();
+        console.error("Error backend:", data.error); // Solo en consola servidor
+      } catch (e) {
+        console.error("Error backend (sin JSON legible):", e);
+      }
+    
+      // Devuelves un error genérico al frontend
+      return res.status(response.status).json({ message: userMessage });
     }
 
     // Procesamos la respuesta (archivo PPTX)
@@ -115,11 +124,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Enviamos el archivo como respuesta
     res.status(200).send(buffer);
   } catch (error) {
-    // Manejo centralizado de errores
-    console.error("Error en /api/generate-ppt:", error);
-    res.status(500).json({ 
-      mensaje: "Error interno del servidor", 
-      error: (error as Error).message // Incluimos detalles del error para debugging
+    // Log técnico solo en el servidor (no va al usuario)
+    console.error("Error en /api/presentations:", error);
+  
+    // Siempre mandar un mensaje amigable
+    res.status(500).json({
+      message: "Ocurrió un error interno al generar la presentación. Inténtalo de nuevo más tarde."
     });
   }
 }

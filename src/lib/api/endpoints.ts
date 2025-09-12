@@ -10,21 +10,22 @@ export const API_BASE = 'http://localhost:8000/api/v1';
  * - Si mañana cambia la URL, solo actualizamos aquí.
  */
 export const ENDPOINTS = {
-  ppt: {
-    generate: `${API_BASE}/ppt/generate-ppt`,
-    template:{
-      list:`${API_BASE}/template/list`
-    }
+  presentations: {
+    create: `${API_BASE}/presentations`,
+  },
+  templates:{
+    list:`${API_BASE}/templates`
   },
   chatbot: {
-    sendMessage: `${API_BASE}/chatbot/send-message-chatbot`,
+    sendMessage: `${API_BASE}/chatbot/send-message`,
   },
   instruction: {
-    generate: `${API_BASE}/instruction/generate-instruction`,
+    create: `${API_BASE}/instruction`,
   },
   quiz: {
     youtube:{
       generate: `${API_BASE}/quiz/youtube/generate`
-    }
+    },
+    evaluate:`${API_BASE}/quiz/evaluate`
   }
 };

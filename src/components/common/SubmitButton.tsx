@@ -12,7 +12,7 @@ interface SubmitButtonProps {
     size?: "sm" | "md" | "lg";
     baseColor?: string;
     gradientColors?: string[];
-    className?: string; //permite estilos extra
+    className?: string;
 }
 
 export default function SubmitButton({
@@ -27,7 +27,7 @@ export default function SubmitButton({
     size = "md",
     baseColor = "bg-blue-600 text-white hover:bg-blue-700",
     gradientColors = ["from-purple-500", "via-pink-500", "to-blue-500"],
-    className, //lo recibimos aquí
+    className,
 }: SubmitButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
 

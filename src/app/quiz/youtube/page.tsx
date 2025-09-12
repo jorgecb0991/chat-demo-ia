@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
-import { Search, Youtube } from "lucide-react";
+import { Search, Youtube, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setQuiz } from "@/store/slices/quizSlice";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import SubmitButton from "@/components/common/SubmitButton";
+import {ApiResponse} from "@/types/api"
 
 export default function YoutubeQuizPage() {
     const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -26,7 +27,7 @@ export default function YoutubeQuizPage() {
     const [questionType, setQuestionType] = useState("multiple");
     const [numQuestions, setNumQuestions] = useState(5);
     const [instructions, setInstructions] = useState("");
-    const [academicLevel, setAcademicLevel] = useState("");
+    const [codProgram, setCodProgram] = useState("1");
     const [language, setLanguage] = useState("es");
     const router = useRouter();
     const dispatch = useAppDispatch();
@@ -62,10 +63,10 @@ export default function YoutubeQuizPage() {
                     questionType,
                     numQuestions,
                     instructions,
-                    academicLevel,
+                    codProgram,
                     language,
-                    userId: "jorge",
-                    sessionId:"6438521839198142464"
+                    user_id: "jorge",
+                    session_id: "7880918367119343616"
                 }),
             });
 
@@ -73,8 +74,11 @@ export default function YoutubeQuizPage() {
                 throw new Error(`Error generando quiz: ${response.statusText}`);
             }
 
-            const data = await response.json();
-            const quiz = data?.data?.quiz;
+            const content: ApiResponse = await response.json();
+            if (!content.success) {
+                throw new Error(`API error: ${content.error?.message}`);
+            }
+            const quiz = content?.data?.quiz;
             dispatch(setQuiz(quiz));
             router.push("/quiz/youtube/config");
         } catch (error) {
@@ -90,7 +94,7 @@ export default function YoutubeQuizPage() {
             description="Genera un quiz a partir de un video de YouTube con diferentes tipos de preguntas."
         >
             {/* Sección logo y búsqueda */}
-            <div className="bg-blue-50 rounded-lg p-2 flex flex-col items-center">
+            <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-4">
                 <div className="relative w-20 h-20">
                     <Image
                         src="/img/youtube_logo.png"
@@ -108,14 +112,14 @@ export default function YoutubeQuizPage() {
                                 placeholder="Buscar en YouTube"
                                 value={youtubeUrl}
                                 onChange={(e) => setYoutubeUrl(e.target.value)}
-                                className="pr-8" // deja espacio para el botón X dentro del input
+                                className="pr-10 pl-10 py-2 rounded-xl border focus:ring-2 focus:ring-blue-400 transition-all" // deja espacio para el botón X dentro del input
                             />
 
                             {/* Botón limpiar dentro del input */}
                             {youtubeUrl && (
                                 <button
                                     onClick={() => setYoutubeUrl("")}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                                 >
                                     &#10005;
                                 </button>
@@ -133,34 +137,26 @@ export default function YoutubeQuizPage() {
                     </div>
                 )}
 
-                {videoThumbnail && (
-                    <div className="relative w-80 mt-2 rounded shadow-md overflow-hidden flex justify-center">
-                        <a
-                            href={youtubeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full h-48 block"
-                        >
-                            <div
-                                className="w-full h-full bg-center bg-cover rounded"
-                                style={{ backgroundImage: `url(${videoThumbnail})` }}
-                            />
-                            <button
-                                className="absolute inset-0 m-auto w-16 h-16 flex items-center justify-center rounded-full transition-colors"
-                                aria-label="Reproducir video"
-                                style={{ top: "50%", transform: "translateY(-50%)" }}
-                            >
-                                ▶
+                {videoThumbnail && (<div className="relative w-80 mt-2 rounded-2xl shadow-lg overflow-hidden group">
+                    <a href={youtubeUrl} target="_blank" rel="noopener noreferrer">
+                        <div
+                            className="w-full h-48 bg-center bg-cover"
+                            style={{ backgroundImage: `url(${videoThumbnail})` }}
+                        />
+                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <button className="w-16 h-16 flex items-center justify-center text-red-600 shadow-lg">
+                                <Play size={32} />
                             </button>
-                        </a>
-                        <button
-                            onClick={() => setVideoThumbnail(null)}
-                            className="absolute top-2 right-2 text-gray-800 p-1 rounded-full shadow hover:font-bold transition-colors"
-                            aria-label="Cerrar miniatura"
-                        >
-                            &#10005;
-                        </button>
-                    </div>
+                        </div>
+                    </a>
+                    <button
+                        onClick={() => setVideoThumbnail(null)}
+                        className="absolute top-3 right-3 bg-white rounded-full p-1 shadow hover:bg-red-100"
+                        aria-label="Cerrar miniatura"
+                    >
+                        &#10005;
+                    </button>
+                </div>
                 )}
             </div>
 
@@ -216,14 +212,16 @@ export default function YoutubeQuizPage() {
             {/* Nivel académico y idioma */}
             <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 mt-6">
                 <div className="flex-1">
-                    <Label>Nivel académico (opcional)</Label>
-                    <Input
-                        type="text"
-                        value={academicLevel}
-                        onChange={(e) => setAcademicLevel(e.target.value)}
-                        placeholder="Ej. Pregrado, Postgrado"
-                        className="mt-1"
-                    />
+                    <Label>Nivel académico</Label>
+                    <Select value={codProgram} onValueChange={(val) => setCodProgram(val)}>
+                        <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Selecciona nivel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="1">Pregrado</SelectItem>
+                            <SelectItem value="2">Postgrado</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div className="flex-1">
@@ -249,7 +247,7 @@ export default function YoutubeQuizPage() {
                 loadingText="Generando..."
                 size="lg"
                 onClick={handleGenerateQuiz}
-                className="mt-6 py-4" // ✅ margen arriba + padding vertical extra
+                className="mt-6 py-4" //margen arriba + padding vertical extra
                 baseColor="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
             />
         </DefaultLayout>
