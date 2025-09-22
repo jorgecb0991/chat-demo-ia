@@ -41,8 +41,8 @@ async function createInstruction(req: NextApiRequest, res: NextApiResponse<ApiRe
             method: 'POST',
             body: JSON.stringify({
                 intention,
-                user_id: 'jorge',
-                session_id: '5941860342303817728',
+                userId: 'jorge',
+                sessionId: '5941860342303817728',
             }),
         });
 

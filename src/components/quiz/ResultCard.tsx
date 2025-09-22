@@ -32,7 +32,7 @@ export default function ResultCard({
     const defaultFailGradient = ["from-amber-100", "via-orange-100", "to-yellow-100"];
 
     // Determinar aprobado/desaprobado
-    const isPassed = scorePercent >= 70;
+    const isPassed = scorePercent >= 50;
 
     const effectiveGradient =
         gradientColors ||
@@ -52,22 +52,25 @@ export default function ResultCard({
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
                 <Award className="w-6 h-6 text-primary" />
-                <h2 className="text-lg font-semibold text-gray-900">{quizTitle}</h2>
+                <h2 className="text-sm sm:text-lg font-semibold text-gray-900">{quizTitle}</h2>
             </div>
 
-            {/* Mensaje motivacional */}
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                {isPassed
-                    ? `¡Excelente trabajo, ${studentName}!`
-                    : `Buen esfuerzo, ${studentName}. ¡Sigue practicando!`}
-            </h3>
+            {/* Mensaje motivacional y porcentaje en columnas */}
+            <div className="flex items-start justify-between gap-4 mb-4">
+                {/* Columna de texto */}
+                <div className="flex-1">
+                    <h3 className="text-sm sm:text-2xl font-bold text-gray-900 mb-2">
+                        {isPassed
+                            ? `¡Excelente trabajo, ${studentName}!`
+                            : `Buen esfuerzo, ${studentName}. ¡Sigue practicando!`}
+                    </h3>
+                    <p className="text-xs sm:text-xl text-gray-800">{feedback}</p>
+                </div>
 
-            {/* Feedback */}
-            <p className="text-gray-800 mb-4">{feedback}</p>
-
-            {/* Puntaje grande */}
-            <div className="text-5xl font-extrabold text-primary mb-6">
-                {scorePercent}%
+                {/* Columna de porcentaje */}
+                <div className="shrink-0 text-5xl font-extrabold text-primary">
+                    {scorePercent}%
+                </div>
             </div>
 
             {/* Estadísticas */}
@@ -103,3 +106,4 @@ export default function ResultCard({
         </motion.div>
     );
 }
+    

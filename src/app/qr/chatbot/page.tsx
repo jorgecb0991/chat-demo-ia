@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 
 export default function QRPage() {
   const router = useRouter();
+  //const destinationUrl = "https://2e66a0aab25b.ngrok-free.app"+`/chat`;
+  const destinationUrl = "http://localhost:3000"+`/chat`;
 
   return (
     <DefaultLayout
@@ -20,7 +22,7 @@ export default function QRPage() {
         {/* QR dentro de Card */}
         <Card className="shadow-md gap-2">
           <CardContent className="flex items-center justify-center p-6">
-            <QRCode value="https://utec.edu.pe" size={200} />
+            <QRCode value={`${destinationUrl}`} size={200} />
           </CardContent>
         </Card>
 

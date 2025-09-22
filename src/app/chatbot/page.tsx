@@ -12,23 +12,33 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {ApiResponse} from '@/types/api'
 
-
 import { v4 as uuidv4 } from "uuid";
-import { MessageSquarePlus, RefreshCw, Sparkles, Loader2, Type, Code, Target, ListChecks } from "lucide-react";
+import { MessageSquarePlus, RefreshCw, Sparkles, Loader2, Type, Code, Target, ListChecks, Calendar as CalendarIcon  } from "lucide-react";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import SubmitButton from "@/components/common/SubmitButton"
+import ObjectiveCard from '@/components/common/ObjectiveCard';
+import ChatbotInstructionsCard from '@/components/chatbot/ChatbotInstructionsCard';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import ChatbotNameInput from '@/components/chatbot/ChatbotNameInput';
 
 export default function CreateChatbotPage() {
     const [intention, setIntention] = useState("");
-    const [response, setResponse] = useState<string | null>(null);
+    const [response, setResponse] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
-    const [nameAssistant, setNameAssistant] = useState("");
+    const [nameAssistant, setNameAssistant] = useState("Utechie");
 
     const router = useRouter();
 
     const intentionRef = useRef<HTMLTextAreaElement>(null);
     const responseRef = useRef<HTMLTextAreaElement>(null);
+    const [codProgram, setCodProgram] = useState("1");
+    const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined);
 
     const handleAutoResize = (el: HTMLTextAreaElement) => {
         el.style.height = "auto";
@@ -61,13 +71,20 @@ export default function CreateChatbotPage() {
         if (!intention.trim()) return;
 
         setLoading(true);
-        setResponse(null);
+        setResponse("");
 
         try {
+            // Determina el nivel académico y crea un tag para las instrucciones
+            const academicLevel = codProgram === "1" ? "pregrado" : "postgrado";
+            const academicLevelTag = `[nivel academico: ${academicLevel}]`;
+
+            // Combina el tag con la intención original
+            const finalIntention = `${academicLevelTag} ${intention}`;
+
             const res = await fetch("/api/chatbot/instruction", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ intention }),
+                body: JSON.stringify({ intention: finalIntention }),
             });
 
             // Leer la respuesta JSON una sola vez
@@ -98,18 +115,20 @@ export default function CreateChatbotPage() {
     
     const handleClear = () => {
         setIntention("");
-        setResponse(null);
+        setResponse("");
     };
 
     const handleGenerateChatbot = async () => {
         if (!response) return;
         setGenerating(true);
 
+        let message = response + " Eres Utechie, el asistente conversacional oficial de la Universidad de Ingeniería y Tecnología (UTEC). Tu propósito es interactuar con estudiantes de UTEC. En tu comunicación, busca reflejar la cultura de UTEC y los principios del modelo educativo TransformaTec, usando terminología como 'agentes de cambio', 'formación integral', 'ecosistema tecnológico' y 'TRANSFORMATEC' de forma adecuada y natural dentro de las conversaciones."
+
         try {
             const res = await fetch("/api/chatbot/send-message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: response, session_id: uuidv4() }),
+                body: JSON.stringify({ message: message, session_id: uuidv4() }),
             });
 
             if (!res.ok) throw new Error("Error al generar chatbot");
@@ -134,8 +153,6 @@ export default function CreateChatbotPage() {
             titleIcon={<Code className="w-6 h-6" />}
             description="Diseña un chatbot personalizado con instrucciones claras y adaptadas a tus necesidades."
             loading={generating}
-            loadingMessage="Generando Chatbot..."
-            loadingIcon={<Loader2 className="w-12 h-12 animate-spin text-blue-500" />}
         >
             {!response && (
                 <form onSubmit={handleCreate} className="space-y-6">
@@ -149,14 +166,62 @@ export default function CreateChatbotPage() {
                         value={intention}
                         onChange={(e) => setIntention(e.target.value)}
                         required
-                        rows={1}
-                        placeholder="Ejemplo: 'Chatbot para responder dudas sobre admisión de UTEC, tono formal, breve y preciso...'"
+                        rows={3}
+                        placeholder="Ejemplo: 'Chatbot para instruir a estudiantes sobre inteligencia artificial'"
                         className="w-full p-5 border border-gray-300 rounded-lg resize-none
                                     focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-300 
                                     hover:border-blue-500 text-black overflow-hidden"
                         disabled={loading}
                         onInput={(e) => handleAutoResize(e.currentTarget)}
                     />
+
+                    {/* Contenedor de los nuevos campos */}
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        {/* Campo Nivel académico */}
+                        <div className="w-full sm:w-40 flex flex-col">
+                            <Label htmlFor="academicLevel">Nivel académico</Label>
+                            <Select value={codProgram} onValueChange={setCodProgram}>
+                                <SelectTrigger id="program" className="mt-1">
+                                    <SelectValue placeholder="Selecciona nivel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="1">Pregrado</SelectItem>
+                                    <SelectItem value="2">Postgrado</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {/* Campo Fecha de caducidad */}
+                        <div className="w-full sm:w-60 flex flex-col">
+                            <Label htmlFor="expirationDate">Fecha de caducidad</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                            "w-full justify-start text-left font-normal mt-1",
+                                            !expirationDate && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {expirationDate ? (
+                                            format(expirationDate, "PPP", { locale: es })
+                                        ) : (
+                                            <span>Selecciona una fecha</span>
+                                        )}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={expirationDate}
+                                        onSelect={setExpirationDate}
+                                        initialFocus
+                                        locale={es}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
 
                     <div className="flex justify-between items-center gap-4">
                         <Button
@@ -194,50 +259,19 @@ export default function CreateChatbotPage() {
                     aria-live="polite"
                 >
                     {/* NUEVO INPUT para nombre del chatbot */}
-                    <Card className="mb-2 p-6 shadow-md gap-2">
-                        <div className="space-y-3">
-                            <Label
-                                htmlFor="chatbot-name"
-                                className="flex items-center gap-2 font-semibold text-blue-900"
-                            >
-                                <Type className="w-5 h-5" />
-                                Nombre del Chatbot
-                            </Label>
-                            <Input
-                                id="chatbot-name"
-                                type="text"
-                                value={nameAssistant}
-                                onChange={(e) => setNameAssistant(e.target.value)}
-                                placeholder="Ejemplo: Asistente de Admisión UTEC"
-                                className="text-black"
-                            />
-                        </div>
-                    </Card>
+                    <ChatbotNameInput nameAssistant={nameAssistant} setNameAssistant={setNameAssistant} />
 
                     <div className="space-y-2">
-                        {/* Objetivo */}
-                        <Card className="p-6 shadow-sm gap-2">
-                            <h2 className="flex items-center gap-2 text-xl font-semibold text-blue-900 mb-3">
-                                <Target className="w-5 h-5" />
-                                Objetivo del Chatbot
-                            </h2>
-                            <p className="whitespace-pre-line text-gray-800">{intention}</p>
-                        </Card>
-
-                        {/* Instrucciones */}
-                        <Card className="p-6 shadow-sm gap-2">
-                            <h2 className="flex items-center gap-2 text-xl font-semibold text-blue-900 mb-3">
-                                <ListChecks className="w-5 h-5" />
-                                Instrucciones
-                            </h2>
-                            <Textarea
-                                ref={responseRef}
-                                value={response}
-                                onChange={(e) => setResponse(e.target.value)}
-                                className="min-h-[150px] resize-none text-black"
-                                onInput={(e) => handleAutoResize(e.currentTarget)}
-                            />
-                        </Card>
+                        {/* Uso del componente del objetivo */}
+                        <ObjectiveCard intention={intention} />
+                        
+                        {/* Uso del componente de las instrucciones */}
+                        <ChatbotInstructionsCard
+                            response={response}
+                            setResponse={setResponse}
+                            responseRef={responseRef}
+                            handleAutoResize={handleAutoResize}
+                        />
                     </div>
 
                     {/* Botón personalizado */}
@@ -252,7 +286,6 @@ export default function CreateChatbotPage() {
                                 </span>
                             }
                             size="lg"
-                            baseColor="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white hover:opacity-90"
                             fullWidth
                         />
                     </div>

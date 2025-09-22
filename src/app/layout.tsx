@@ -44,7 +44,7 @@ export default function RootLayout({
               <AppSidebar />
 
               {/* Contenido principal con scroll */}
-              <div className="flex-1 flex flex-col gap-4 p-6 min-h-0 overflow-y-auto">
+              <div className="flex-1 flex flex-col gap-4 py-6 min-h-0 overflow-y-auto">
                 {/* Breadcrumb */}
                 <div className="w-full sm:w-full md:w-5xl lg:w-6xl xl:w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <Card className="flex h-12 items-center rounded-xl border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 gap-2">

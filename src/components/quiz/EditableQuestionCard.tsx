@@ -4,6 +4,7 @@ import TypewriterText from "@/components/common/TypewriterText";
 import TypewriterInput from "@/components/common/TypewriterInput";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { QuizQuestion } from "@/types/quiz";
+import clsx from "clsx";
 
 interface QuestionCardProps {
     question: QuizQuestion;
@@ -85,6 +86,12 @@ export default function EditableQuestionCard({
         onChange?.(updated);
     };
 
+    const handleShortAnswerChange = (value: string) => {
+        const updated = { ...localQuestion, suggestedAnswer: value };
+        setLocalQuestion(updated);
+        onChange?.(updated);
+    };
+
     const handleOptionTextChange = (idx: number, value: string) => {
         if (!localQuestion.options) return;
         const updatedOptions = localQuestion.options.map((opt, i) =>
@@ -160,11 +167,7 @@ export default function EditableQuestionCard({
                                 className="w-full border-0 bg-transparent px-1 py-2 text-gray-900 placeholder-gray-400 focus:border-b border-blue-500 focus:ring-0 focus:outline-none transition duration-200"
                                 placeholder="Escribe tu respuesta aquí..."
                                 value={localQuestion.suggestedAnswer}
-                                onChange={(e) => {
-                                    const updated = { ...localQuestion, answerText: e.target.value };
-                                    setLocalQuestion(updated);
-                                    onChange?.(updated);
-                                }}
+                                onChange={(e) => handleShortAnswerChange(e.target.value)}
                             />
                         ) : (
                             <span className="text-gray-500 italic">Respuesta pendiente...</span>
@@ -175,15 +178,19 @@ export default function EditableQuestionCard({
                         key={localQuestion.options![optIdx].optionId}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-left flex flex-row items-baseline gap-4"
                     >
+                        {/*Botón de Radio*/}
                         <div
-                            className={`grid place-items-center rounded-full border font-semibold w-6 h-6 ${localQuestion.options![optIdx].isCorrect
-                                    ? "bg-green-500 border-green-500 text-white"
-                                    : "bg-card border-gray-300 text-gray-700"
-                                }`}
+                            className={clsx(
+                                "grid place-items-center rounded-full font-semibold w-6 h-6",
+                                "transition-all duration-200 transform cursor-pointer", // Transiciones y animación
+                                localQuestion.options![optIdx].isCorrect
+                                    ? "bg-emerald-700 border-2 border-emerald-700 text-white shadow-lg" // Estado Correcto
+                                    : "bg-white border border-gray-400 text-gray-700 shadow-sm hover:border-[#F5A623] hover:text-[#F5A623]" // Estado Incorrecto + Hover
+                            )}
                             onClick={() => handleCircleClick(optIdx)}
                             style={{ cursor: "pointer" }}
                         >
-                            <span>{letters[optIdx]}</span>
+                            <span className="relative bottom-px"   >{letters[optIdx]}</span>
                         </div>
 
                         {editable ? (

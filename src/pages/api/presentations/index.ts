@@ -50,22 +50,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const backendFormData = new FormData();
     
     // Mapeamos campos del frontend (camelCase) al backend (snake_case)
-    backendFormData.append("source_type", sourceTypeForBackend);
+    backendFormData.append("sourceType", sourceTypeForBackend);
     backendFormData.append("title", fields.title as string);
-    backendFormData.append("slide_count", fields.slide_count as string);
+    backendFormData.append("slideCount", fields.slideCount as string);
     backendFormData.append("template", fields.template as string);
-    backendFormData.append("cod_program", fields.codProgram as string);
-    backendFormData.append("user_id", "jorge"); // Valor hardcodeado por ahora
-    backendFormData.append("session_id", "7999306082616868864"); // Valor hardcodeado por ahora
+    backendFormData.append("codProgram", fields.codProgram as string);
+    backendFormData.append("userId", "jorge"); // Valor hardcodeado por ahora
+    backendFormData.append("sessionId", "3599804917629321216"); // Valor hardcodeado por ahora
     
     // Campos opcionales
     if (fields.instruction_teacher) {
-      backendFormData.append("instruction_teacher", fields.instruction_teacher as string);
+      backendFormData.append("instructionTeacher", fields.instructionTeacher as string);
     }
     
     // Siempre enviamos el sourceValue, sin importar el tipo
     if (fields.sourceValue) {
-      backendFormData.append("source_value", fields.sourceValue as string);
+      backendFormData.append("sourceValue", fields.sourceValue as string);
     }
 
     // Manejo de archivos subidos (si existen)

@@ -150,6 +150,6 @@ html, body {
 }
 
 .bg-app-pattern {
-  background: url("/img/fondo3.png") center / cover no-repeat fixed;
+  background: url("/img/fondov4.png") center / cover no-repeat fixed;
   /* fixed asegura que el fondo permanezca en su lugar durante el scroll */
 }

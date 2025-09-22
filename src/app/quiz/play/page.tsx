@@ -1,9 +1,11 @@
 "use client";
 
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useSearchParams, useRouter } from "next/navigation";
 import DefaultLayout from "@/components/layout/DefaultLayout";
-import { BookOpenCheck } from "lucide-react";
+import { BookOpenCheck, RefreshCw } from "lucide-react";
 import VideoHeaderCard from "@/components/video/VideoHeaderCard";
+import SourceHeaderCard from "@/components/quiz/SourceHeaderCard";
 import { useState, useEffect } from "react";
 import QuestionCard from "@/components/quiz/QuestionCard";
 import { Separator } from "@/components/ui/separator";
@@ -20,10 +22,17 @@ import {
 } from "@/types/quiz";
 import { quizMock } from "@/mocks/quizMocks";
 import {ApiResponse} from "@/types/api"
+import { Quiz } from "@/types/quiz";     
 
-export default function PlayYoutubeQuizPage() {
+export default function PlayQuizPage() {
     const dispatch = useAppDispatch();
-    const quiz = useAppSelector((state) => state.quiz.current);
+    //const quiz = useAppSelector((state) => state.quiz.current);
+    const searchParams = useSearchParams();
+    const sourceType = searchParams?.get("sourceType");
+    const quizId = searchParams?.get("quizId");
+    // Nuevo estado para el quiz y el estado de carga
+    const [quiz, setQuiz] = useState<Quiz | null>(null);
+    const [loadingQuiz, setLoadingQuiz] = useState<boolean>(true);
     //const quiz = quizMock;
 
     // El estado 'answers' ahora almacena el objeto StudentAnswer
@@ -38,6 +47,32 @@ export default function PlayYoutubeQuizPage() {
     const handleAnswer = (questionId: string | number, answer: StudentAnswer) => {
         setAnswers((prev) => ({ ...prev, [questionId]: answer }));
     };
+
+    useEffect(() => {
+        const fetchQuiz = async () => {
+            if (!quizId) {
+                console.error("No se encontró quizId en la URL.");
+                setLoadingQuiz(false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/quiz/${quizId}`);
+                const content: ApiResponse = await response.json();
+                if (response.ok && content.success && content.data?.quiz) {
+                    setQuiz(content.data.quiz);
+                } else {
+                    console.error("Error al obtener el quiz:", content.error?.message || "Error desconocido");
+                }
+            } catch (error) {
+                console.error("Error de red al obtener el quiz:", error);
+            } finally {
+                setLoadingQuiz(false);
+            }
+        };
+
+        fetchQuiz();
+    }, [quizId]); // Dependencia del quizId en la URL
 
     //Evaluación
     /**
@@ -181,6 +216,26 @@ export default function PlayYoutubeQuizPage() {
         ? evaluationResult.questions.filter((q) => !q.correct).length
         : 0;
 
+    const header = sourceType == "youtube" ? (
+        <VideoHeaderCard
+            thumbnail={quiz?.metadata?.videoThumbnail || ""}
+            videoTitle={quiz?.metadata?.videoTitle || ""}
+            description={quiz?.description || ""}
+            duration={quiz?.metadata?.duration || ""}
+            publishedAgo={quiz?.metadata?.publishedAgo || ""}
+            views={quiz?.metadata?.views || ""}
+            channelName={quiz?.metadata?.channelName || ""}
+            channelAvatar={quiz?.metadata?.channelAvatar || ""}
+            videoUrl={quiz?.videoUrl || ""}
+        />
+    ) : (
+        <SourceHeaderCard
+            sourceType={sourceType as any}
+            title={quiz?.title}
+            description={quiz?.description}
+        />
+    );
+
     return (
         <DefaultLayout
             title="Cuestionario"
@@ -201,18 +256,8 @@ export default function PlayYoutubeQuizPage() {
                     />
                 )}
 
-                {/* Header con video */}
-                <VideoHeaderCard
-                    thumbnail={quiz?.metadata?.videoThumbnail || ""}
-                    videoTitle={quiz?.metadata?.videoTitle || ""}
-                    description={quiz?.description || ""}
-                    duration={quiz?.metadata?.duration || ""}
-                    publishedAgo={quiz?.metadata?.publishedAgo || ""}
-                    views={quiz?.metadata?.views || ""}
-                    channelName={quiz?.metadata?.channelName || ""}
-                    channelAvatar={quiz?.metadata?.channelAvatar || ""}
-                    videoUrl={quiz?.videoUrl || ""}
-                />
+                {/* Header */}
+                {header}
 
 
                 <Separator />
@@ -235,10 +280,14 @@ export default function PlayYoutubeQuizPage() {
                 {evaluationResult === null && (
                     <SubmitButton
                         text="Enviar Respuestas"
-                        loadingText="Revisando..."
+                        loadingText={
+                            <span className="flex items-center gap-2">
+                                <RefreshCw className="w-5 h-5 animate-spin" />
+                                Generando...
+                            </span>
+                        }
                         size="lg"
                         onClick={handleSubmit}
-                        baseColor="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
                     />
                 )}
             </div>

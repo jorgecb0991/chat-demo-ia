@@ -3,6 +3,7 @@
 import React from 'react';
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import clsx from "clsx";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -34,12 +35,12 @@ export function AppBreadcrumb() {
     });
 
     return (
-        <Breadcrumb className="flex items-center h-full">
-            <BreadcrumbList className="flex items-center gap-1 h-full">
+        <Breadcrumb className="flex items-center px-6 ">
+            <BreadcrumbList className="flex items-center gap-1">
                 {/* Inicio */}
-                <BreadcrumbItem className="flex items-center h-full">
-                    <BreadcrumbLink asChild className="flex items-center h-full">
-                        <Link href="/" className="flex items-center h-full">
+                <BreadcrumbItem className="flex items-center">
+                    <BreadcrumbLink asChild className="flex items-center h-full text-gray-600 hover:text-[#F5A623] transition-colors duration-200">
+                        <Link href="/" className="flex items-center ">
                             <Home className="w-4 h-4 mr-1" />
                             Inicio
                         </Link>
@@ -51,19 +52,19 @@ export function AppBreadcrumb() {
                     const Icon = iconMap[segment.toLowerCase()] || HelpCircle;
 
                     return (
-                        <span key={idx} className="flex items-center h-full">
+                        <span key={idx} className="flex items-center">
                             {/* Separador */}
-                            <BreadcrumbSeparator className="flex items-center h-full" />
+                            <BreadcrumbSeparator className="flex items-center" />
 
                             {idx === crumbs.length - 1 ? (
-                                <BreadcrumbPage className="flex items-center gap-1 h-full">
+                                <BreadcrumbPage className="flex items-center gap-1 text-[#002C5B] font-semibold">
                                     {Icon && <Icon className="w-4 h-4 mr-1" />}
                                     {crumb.title}
                                 </BreadcrumbPage>
                             ) : (
-                                <BreadcrumbItem className="flex items-center h-full">
-                                    <BreadcrumbLink asChild className="flex items-center gap-1 h-full">
-                                        <Link href={crumb.href} className="flex items-center h-full">
+                                <BreadcrumbItem className="flex items-center">
+                                    <BreadcrumbLink asChild className="flex items-center gap-1 h-full hover:text-[#F5A623] transition-colors duration-200">
+                                        <Link href={crumb.href} className="flex items-center">
                                             {Icon && <Icon className="w-4 h-4 mr-1" />}
                                             {crumb.title}
                                         </Link>

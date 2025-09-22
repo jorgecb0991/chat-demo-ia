@@ -9,7 +9,7 @@ import {
     CardContent,
 } from "@/components/ui/card";
 import { Toaster } from "sonner"; 
-
+import clsx from "clsx";
 
 interface DefaultLayoutProps {
     title?: string;
@@ -17,8 +17,6 @@ interface DefaultLayoutProps {
     description?: string;
     children: ReactNode;
     loading?: boolean;
-    loadingMessage?: string;
-    loadingIcon?: ReactNode;
 }
 
 export default function DefaultLayout({
@@ -27,26 +25,10 @@ export default function DefaultLayout({
     description,
     children,
     loading = false,
-    loadingMessage = "Cargando...",
-    loadingIcon,
 }: DefaultLayoutProps) {
     return (
-        <div className="relative flex justify-center items-start p-6 h-full">
-            {/* Overlay de carga */}
-            {loading && (
-                <div className="fixed inset-0 bg-black/60 flex flex-col items-center justify-center z-50 backdrop-blur-sm">
-                    {loadingIcon ? (
-                        <>{loadingIcon}</>
-                    ) : (
-                        <>
-                            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mb-4"></div>
-                            <p className="text-white text-lg font-semibold">{loadingMessage}</p>
-                        </>
-                    )}
-                </div>
-            )}
-
-            <Card className="mx-auto shadow-xl border border-gray-200 bg-white/90 backdrop-blur-sm flex flex-col flex-1 min-h-0 gap-2">
+        <div className="relative flex justify-center items-start py-4 h-full">
+            <Card className="w-full mx-auto shadow-xl border border-gray-200 bg-white/90 backdrop-blur-sm flex flex-col flex-1 min-h-0 gap-2">
                 <CardHeader>
                     {title && (
                         <CardTitle className="text-2xl md:text-3xl font-bold text-blue-900 flex items-center gap-2">
@@ -63,7 +45,7 @@ export default function DefaultLayout({
 
                 <CardContent className="flex-1 min-h-0">
                     {/* ✅ Aquí el único scroll */}
-                    <div className="p-4 md:p-6">
+                    <div className={clsx("", { "pointer-events-none cursor-wait": loading })}>
                         {children}
                     </div>
                 </CardContent>

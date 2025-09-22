@@ -91,20 +91,20 @@ export default function QuestionCard({
                 stiffness: 120,
                 damping: 12
             }}
-            className="w-full max-w-xl mx-auto my-4 rounded-2xl border shadow-lg bg-white"
+            className="w-full max-w-2xl mx-auto my-4 rounded-2xl border shadow-lg bg-white p-4 sm:p-6"
         >
             {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center">
+            <div className="py-3 border-b border-gray-100 flex items-center">
                 <div className="w-8 h-8 rounded-full border flex items-center justify-center font-semibold text-gray-700 bg-gray-50">
                     {index + 1}
                 </div>
-                <div className="flex-1 px-3 font-medium text-gray-900">
+                <div className="flex-1 pl-3 font-medium text-base sm:text-lg text-gray-900">
                     {question.questionText}
                 </div>
             </div>
 
             {/* Options or Short Answer Input */}
-            <div className="p-4 flex flex-col gap-2">
+            <div className="pt-4 pb-2 flex flex-col gap-2">
                 {isMultipleChoice ? (
                     // Opciones múltiple
                     question.options?.map((opt, idx) => {
@@ -151,7 +151,7 @@ export default function QuestionCard({
                                 >
                                     {letters[idx]}
                                 </div>
-                                <span>{opt.text}</span>
+                                <span className="text-sm sm:text-base">{opt.text}</span>
                             </button>
                         );
                     })
@@ -163,10 +163,10 @@ export default function QuestionCard({
                             className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-colors
                                 ${showResults
                                     ? shortEval === null
-                                        ? "border-gray-300 bg-gray-50 text-gray-700 focus:ring-blue-300" // no hay referencia para evaluar
+                                        ? "border-gray-300 bg-gray-50 text-gray-700 focus:ring-blue-300"
                                         : shortEval === true
                                             ? "border-green-500 bg-green-50 text-green-700 focus:ring-green-300"
-                                            : "border-amber-400 bg-amber-50 text-amber-800 focus:ring-amber-200" // uso amber para no ser agresivo como rojo fuerte
+                                            : "border-amber-400 bg-amber-50 text-amber-800 focus:ring-amber-200"
                                     : "border-gray-300 focus:ring-blue-500"
                                 }`}
                             placeholder="Escribe tu respuesta aquí..."
@@ -199,7 +199,7 @@ export default function QuestionCard({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="border-t border-gray-200 px-4 py-3"
+                    className="border-t border-gray-200 pt-3"
                 >
                     <div className="rounded-lg border border-gray-200 bg-gray-50 shadow-sm p-4">
                         <p className="font-semibold text-gray-800">💡 Explicación</p>

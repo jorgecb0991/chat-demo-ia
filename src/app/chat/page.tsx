@@ -8,7 +8,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SendHorizontal } from "lucide-react";
+import { SendHorizontal, ChevronLeft } from "lucide-react";
 
 type Role = "user" | "assistant";
 type Msg = { id: string; role: Role; text: string };
@@ -32,7 +32,7 @@ function Avatar({ role }: { role: Role }) {
         return (
             <div className="w-9 h-9 rounded-full overflow-hidden shadow-sm bg-white border border-gray-300">
                 <Image
-                    src="/img/UTEC-Logo.jpg"
+                    src="/img/utechie-001.png"
                     alt="UTEC Logo"
                     width={36}
                     height={36}
@@ -161,21 +161,47 @@ export default function ChatPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <Card className="mx-auto w-full max-w-3xl flex flex-col overflow-hidden py-0 gap-2">
-                <CardHeader className="flex items-center justify-between bg-gray-50 border-b p-0 px-4 py-2">
-                    <div className="flex items-center gap-3">
-                        <img
-                            src="/img/UTEC-Logo.jpg"
-                            alt="Logo"
-                            className="w-10 h-10 rounded-md object-cover"
-                        />
-                        <div>
-                            <h1 className="text-lg font-semibold text-gray-900">{assistant}</h1>
-                            <p className="text-xs text-gray-500">Sesión {sessionId}</p>
-                        </div>      
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => router.push("/chatbot")}>
-                        Volver
+                <CardHeader className="flex items-center justify-between gap-4 p-4 md:p-6 bg-gradient-to-r from-[#002C5B] to-[#006AB5] rounded-t-xl shadow-lg">
+                    {/* Botón de volver con ícono y texto */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => router.push("/chatbot")}
+                        className="group p-2 rounded-full hover:bg-white/20 transition-all duration-300"
+                        aria-label="Volver"
+                    >
+                        <ChevronLeft className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
                     </Button>
+
+                    {/* Contenedor central con la información del asistente */}
+                    <div className="flex items-center gap-3 md:gap-4 flex-grow justify-center">
+                        {/*
+                            Usamos el componente 'Image' de Next.js con la ruta de archivo local.
+                            Este código no funcionará en este entorno de desarrollo, pero
+                            es el correcto para un proyecto de Next.js.
+                        */}
+                        <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-white shadow-md overflow-hidden">
+                            <Image
+                                src="/img/utechie-001.png"
+                                alt="Logo de Utechi"
+                                layout="fill"
+                                objectFit="cover"
+                                priority
+                            />
+                        </div>
+                        {/* Nombre del asistente, en color blanco para un mejor contraste */}
+                        <div className="text-center">
+                            <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide truncate">
+                                {assistant}
+                            </h1>
+                            <p className="text-xs md:text-sm text-white/80">
+                                Asistente Virtual UTEC
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Espacio reservado para centrar el nombre si no hay botón a la derecha */}
+                    <div className="w-8"></div>
                 </CardHeader>
 
 

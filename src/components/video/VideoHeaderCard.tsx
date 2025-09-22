@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Eye, Clock, Film } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface VideoHeaderCardProps {
     thumbnail: string;
@@ -29,6 +29,8 @@ export default function VideoHeaderCard({
     videoUrl,
 }: VideoHeaderCardProps) {
     const [copied, setCopied] = useState(false);
+    // Nuevo estado para rastrear si la carga del avatar ha fallado
+    const [hasAvatarFailed, setHasAvatarFailed] = useState(false);
 
     const handleCopy = async () => {
         try {
@@ -86,11 +88,15 @@ export default function VideoHeaderCard({
                 {/* 3. Channel Avatar + Title */}
                 <div className="flex items-center gap-3 mb-2">
                     <Avatar className="h-full rounded-xl cursor-pointer">
-                        <AvatarImage
-                            src={channelAvatar || undefined}
-                            alt={channelName}
-                            className="w-8 h-8 rounded-full object-cover"
-                        />
+                        {/* Se muestra AvatarImage solo si la carga no ha fallado */}
+                        {!hasAvatarFailed && (
+                            <AvatarImage
+                                src={channelAvatar || undefined}
+                                alt={channelName}
+                                className="w-8 h-8 rounded-full object-cover"
+                                onError={() => setHasAvatarFailed(true)} // Si falla la carga, actualiza el estado
+                            />
+                        )}
                         <AvatarFallback className="bg-gray-100 text-gray-400">
                             N/A
                         </AvatarFallback>

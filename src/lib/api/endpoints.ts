@@ -2,6 +2,7 @@
 
 // 📌 URL base de nuestro backend Python
 //export const API_BASE = 'https://api-test5.utec.net.pe/vertex-ai-api/api/v1';
+//export const API_BASE = 'https://0ee3cd91e591.ngrok-free.app/api/v1';
 export const API_BASE = 'http://localhost:8000/api/v1';
 
 /**
@@ -26,6 +27,9 @@ export const ENDPOINTS = {
     youtube:{
       generate: `${API_BASE}/quiz/youtube/generate`
     },
-    evaluate:`${API_BASE}/quiz/evaluate`
+    evaluate:`${API_BASE}/quiz/evaluate`,
+    generate: `${API_BASE}/quiz/generate`,
+    save:`${API_BASE}/quiz/save`,
+    get:`${API_BASE}/quiz`,
   }
 };

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
-import { Search, Youtube, Play } from "lucide-react";
+import { Search, Youtube, Play, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setQuiz } from "@/store/slices/quizSlice";
@@ -29,6 +29,7 @@ export default function YoutubeQuizPage() {
     const [instructions, setInstructions] = useState("");
     const [codProgram, setCodProgram] = useState("1");
     const [language, setLanguage] = useState("es");
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const dispatch = useAppDispatch();
 
@@ -53,20 +54,22 @@ export default function YoutubeQuizPage() {
 
     const handleGenerateQuiz = async () => {
         if (!youtubeUrl) return alert("Ingresa la URL de YouTube");
+        setLoading(true);
 
         try {
             const response = await fetch("/api/quiz/youtube/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    videoUrl: youtubeUrl,
+                    sourceType: 'youtube',
+                    sourceValue: youtubeUrl,
                     questionType,
                     numQuestions,
                     instructions,
                     codProgram,
                     language,
-                    user_id: "jorge",
-                    session_id: "7880918367119343616"
+                    userId: "jorge",
+                    sessionId: "7880918367119343616"
                 }),
             });
 
@@ -80,10 +83,12 @@ export default function YoutubeQuizPage() {
             }
             const quiz = content?.data?.quiz;
             dispatch(setQuiz(quiz));
-            router.push("/quiz/youtube/config");
+            router.push("/quiz/config");
         } catch (error) {
             console.error(error);
             alert("Error generando el quiz");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -92,6 +97,7 @@ export default function YoutubeQuizPage() {
             title="Crear YouTube Quiz"
             titleIcon={<Youtube className="w-6 h-6" />}
             description="Genera un quiz a partir de un video de YouTube con diferentes tipos de preguntas."
+            loading={loading}
         >
             {/* Sección logo y búsqueda */}
             <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-4">
@@ -244,11 +250,15 @@ export default function YoutubeQuizPage() {
 
             <SubmitButton
                 text="Generar YouTube Quiz"
-                loadingText="Generando..."
+                loadingText={
+                    <span className="flex items-center gap-2">
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        Generando...
+                    </span>
+                }
                 size="lg"
                 onClick={handleGenerateQuiz}
                 className="mt-6 py-4" //margen arriba + padding vertical extra
-                baseColor="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
             />
         </DefaultLayout>
     );

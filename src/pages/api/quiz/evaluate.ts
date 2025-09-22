@@ -53,8 +53,8 @@ export default async function handler(
             quizId: quiz.quizId,
             studentName: quiz.studentName || "Alumno",
             questions: evaluationQuestions,
-            session_id:"1096227936299646976",
-            user_id:"jorge"
+            sessionId:"1096227936299646976",
+            userId:"jorge"
         };
 
         const responseData: ApiResponse = await apiRequest(ENDPOINTS.quiz.evaluate, {

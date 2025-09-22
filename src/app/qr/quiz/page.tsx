@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import QRCode from "react-qr-code";
 import { FileQuestion, QrCode } from "lucide-react";
 import DefaultLayout from "@/components/layout/DefaultLayout";
@@ -9,6 +9,13 @@ import { Button } from "@/components/ui/button";
 
 export default function QRPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sourceType = searchParams?.get("sourceType");
+  const quizId = searchParams?.get("quizId");
+
+  // Construye la URL de destino, incluyendo el parámetro sourceType
+  const destinationUrl = "https://2e66a0aab25b.ngrok-free.app"+`/quiz/play?sourceType=${sourceType}`+`&quizId=${quizId}`;
+  //const destinationUrl = "http://localhost:3000"+`/quiz/play?sourceType=${sourceType}`+`&quizId=${quizId}`;
 
   return (
     <DefaultLayout
@@ -20,18 +27,18 @@ export default function QRPage() {
         {/* QR dentro de Card */}
         <Card className="p-6 border shadow-md rounded-xl bg-white gap-2">
           <CardContent className="flex justify-center">
-            <QRCode value="https://utec.edu.pe" size={200} />
+            <QRCode value={`${destinationUrl}`} size={200} />
           </CardContent>
         </Card>
 
         {/* Texto */}
         <p className="text-center text-muted-foreground text-sm leading-relaxed max-w-sm">
-          Escanea este código QR para acceder al chatbot desde tu dispositivo móvil.
+          Escanea este código QR para acceder al cuestionario desde tu dispositivo móvil.
         </p>
 
         {/* Botón estilizado con shadcn */}
         <Button
-          onClick={() => router.push("/quiz/youtube/play")}
+          onClick={() => router.push(destinationUrl)}
           className="bg-blue-900 hover:bg-blue-800 text-white gap-2"
         >
           <FileQuestion className="w-5 h-5" />

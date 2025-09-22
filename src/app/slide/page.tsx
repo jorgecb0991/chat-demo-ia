@@ -3,7 +3,7 @@
 import React from 'react';
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Presentation, AlertCircle } from "lucide-react";
+import { Presentation, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,13 +93,13 @@ export default function SlideGeneratorPage() {
         try {
             const formData = new FormData();
             formData.append("title", titulo);
-            formData.append("slide_count", numSlides.toString());
+            formData.append("slideCount", numSlides.toString());
             formData.append("template", plantillaSeleccionada);
             formData.append("sourceValue", sourceValue);
             formData.append("codProgram", codProgram);
 
             if (instruccionesProfesor.trim()) {
-                formData.append("instruction_teacher", instruccionesProfesor.trim());
+                formData.append("instructionTeacher", instruccionesProfesor.trim());
             }
 
             let typeToSend = sourceType;
@@ -166,28 +166,6 @@ export default function SlideGeneratorPage() {
             titleIcon={<Presentation className="w-6 h-6" />}
             description="Completa la información para generar tu presentación."
             loading={loading}
-            loadingMessage={
-                isYoutube
-                    ? "Procesando video de YouTube... Esto puede tardar un poco más"
-                    : "Generando presentación..."
-            }
-            loadingIcon={
-                isYoutube ? (
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="relative w-20 h-20 animate-pulse">
-                            <Image
-                                src="/img/logo_utec_youtube.png"
-                                alt="YouTube"
-                                fill
-                                className="object-contain"
-                            />
-                        </div>
-                        <p className="text-white text-lg font-semibold text-center">
-                            Procesando video de YouTube... Esto puede tardar un poco más
-                        </p>
-                    </div>
-                ) : undefined
-            }
         >
 
             <div className="space-y-4">
@@ -331,14 +309,27 @@ export default function SlideGeneratorPage() {
                         </div>
                     )}
                 </div>
-
-                <SubmitButton
+                {/* 
+                    <SubmitButton
                     text="Generar presentación"
                     loadingText="Generando..."
                     size="lg"
                     onClick={generarSlides}
                     className=" py-4"
                     baseColor="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500"
+                />
+                */}
+                <SubmitButton
+                    text="Generar presentación"
+                    loadingText={
+                        <span className="flex items-center gap-2">
+                            <RefreshCw className="w-5 h-5 animate-spin" />
+                            Generando...
+                        </span>
+                    }
+                    size="lg"
+                    onClick={generarSlides}
+                    className=" py-4"
                 />
 
             </div>

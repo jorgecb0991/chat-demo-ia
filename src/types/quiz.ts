@@ -53,13 +53,14 @@ export interface Quiz {
     quizId: string;
     title?: string;
     description?: string;
-    videoUrl: string;
+    videoUrl?: string;
     language: string;
-    academicLevel?: string;
+    program?: string;
     instructions?: string;
     questions: QuizQuestion[];
     metadata?: QuizMetadata;
     studentName?: string;
+    source?: string;
 }
 
 // Tipos para el resultado de la evaluación
