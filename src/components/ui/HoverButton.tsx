@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useState } from "react";
-import TypewriterText from "@/components/common/TypewriterText";
+import TypewriterText from "@/components/custom/TypewriterText";
 
 interface HoverButtonProps {
     icon: React.ReactNode; // El ícono que quieres mostrar

@@ -1,0 +1,13 @@
+{
+    "frontend": {
+        "welcomeMessage": "Bienvenido a acme web",
+        "backgroundColor": "#4884157"
+    },
+    "authentication": {
+        "googleClientId": "tu-client-id-de-google",
+        "apiEndpoint": "http://localhost:5050/horus-api/v1/nonspec/oauth2/auth"
+    },
+    "security": {
+        "sessionExpirationTime": 3600
+    }
+}
